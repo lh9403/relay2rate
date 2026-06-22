@@ -1,0 +1,1198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>relay2rate</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #18202b;
+      --muted: #657184;
+      --line: #d9e0ea;
+      --soft: #eef3f8;
+      --th-bg: #eef3f8;
+      --th-text: #354154;
+      --input-bg: #ffffff;
+      --pill-green: #e8f5ee;
+      --pill-red: #fff0ed;
+      --pill-amber: #fff5df;
+      --pill-blue: #e8f1fb;
+      --green: #087f5b;
+      --blue: #155b9f;
+      --red: #b42318;
+      --amber: #a15c07;
+      --primary-bg: #155b9f;
+      --primary-text: #ffffff;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0f1419;
+      --panel: #1a2028;
+      --text: #e6edf3;
+      --muted: #8b97a7;
+      --line: #2a3340;
+      --soft: #232b35;
+      --th-bg: #232b35;
+      --th-text: #b8c2cf;
+      --input-bg: #1a2028;
+      --pill-green: rgba(8, 127, 91, 0.22);
+      --pill-red: rgba(180, 35, 24, 0.22);
+      --pill-amber: rgba(161, 92, 7, 0.22);
+      --pill-blue: rgba(21, 91, 159, 0.28);
+      --green: #4cc38a;
+      --blue: #6ba4e0;
+      --red: #ff6b5b;
+      --amber: #f0c050;
+      --primary-bg: #2b6cb0;
+      --primary-text: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg: #0f1419;
+        --panel: #1a2028;
+        --text: #e6edf3;
+        --muted: #8b97a7;
+        --line: #2a3340;
+        --soft: #232b35;
+        --th-bg: #232b35;
+        --th-text: #b8c2cf;
+        --input-bg: #1a2028;
+        --pill-green: rgba(8, 127, 91, 0.22);
+        --pill-red: rgba(180, 35, 24, 0.22);
+        --pill-amber: rgba(161, 92, 7, 0.22);
+        --pill-blue: rgba(21, 91, 159, 0.28);
+        --green: #4cc38a;
+        --blue: #6ba4e0;
+        --red: #ff6b5b;
+        --amber: #f0c050;
+        --primary-bg: #2b6cb0;
+        --primary-text: #ffffff;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      flex-shrink: 0;
+      padding: 18px 24px 14px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+    .meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    button, select, input {
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+    button {
+      padding: 0 12px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--primary-bg);
+      border-color: var(--primary-bg);
+      color: var(--primary-text);
+    }
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+    input, select {
+      padding: 0 10px;
+    }
+    main {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 24px 28px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) minmax(150px, 210px) auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .columns {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .column {
+      flex: 1 1 320px;
+      min-width: 280px;
+      max-width: 520px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .column-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--soft);
+    }
+    .column-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .column-name {
+      font-size: 16px;
+      font-weight: 750;
+      overflow-wrap: anywhere;
+    }
+    .column-refresh {
+      margin-left: auto;
+      height: 28px;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 650;
+      flex-shrink: 0;
+    }
+    .column-refresh:disabled {
+      cursor: wait;
+    }
+    .column-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+    }
+    .column-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+    .balance {
+      color: var(--green);
+      font-weight: 700;
+    }
+    .balance.low {
+      color: var(--amber);
+    }
+    .balance.none {
+      color: var(--red);
+    }
+    .column-error {
+      color: var(--red);
+      font-size: 12px;
+      line-height: 1.45;
+      padding: 12px 16px;
+      overflow-wrap: anywhere;
+    }
+    .group-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .group-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .group-item:last-child { border-bottom: 0; }
+    .group-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .group-name {
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .desc {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+      overflow-wrap: anywhere;
+    }
+    .group-side {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .group-conc {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 750;
+      background: var(--pill-green);
+      color: var(--green);
+      white-space: nowrap;
+    }
+    .pill.error {
+      background: var(--pill-red);
+      color: var(--red);
+    }
+    .pill.warn {
+      background: var(--pill-amber);
+      color: var(--amber);
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) minmax(150px, 210px) auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .summary {
+      justify-self: end;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .multiplier {
+      display: inline-flex;
+      justify-content: center;
+      min-width: 58px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--pill-green);
+      color: var(--green);
+      font-weight: 800;
+    }
+    .multiplier.best {
+      background: var(--pill-blue);
+      color: var(--blue);
+    }
+    .multiplier.warn {
+      background: var(--pill-amber);
+      color: var(--amber);
+    }
+    .mult-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mult-delta {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .mult-delta.up {
+      background: var(--pill-red);
+      color: var(--red);
+    }
+    .mult-delta.down {
+      background: var(--pill-green);
+      color: var(--green);
+    }
+    .status {
+      min-height: 20px;
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .channel-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 10px;
+      flex-shrink: 0;
+    }
+    .channel-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      cursor: grab;
+      user-select: none;
+      transition: color .12s, border-color .12s, background .12s, opacity .12s;
+    }
+    .channel-chip.dragging { opacity: .4; cursor: grabbing; }
+    .channel-chip input {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: var(--primary-bg);
+      cursor: pointer;
+    }
+    .channel-chip.active {
+      color: var(--text);
+      border-color: var(--primary-bg);
+      background: var(--primary-bg);
+    }
+    .channel-chip.active input {
+      accent-color: #fff;
+    }
+    #content {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .status.error { color: var(--red); }
+    .empty {
+      padding: 36px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 85vh;
+      overflow: auto;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    }
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 750;
+    }
+    .modal-close {
+      background: transparent;
+      border: 0;
+      font-size: 22px;
+      line-height: 1;
+      padding: 0 4px;
+      color: var(--muted);
+    }
+    .modal-body {
+      padding: 20px;
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+    .form-row label {
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--muted);
+    }
+    .form-row input, .form-row select {
+      width: 100%;
+    }
+    .form-hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .form-error {
+      display: none;
+      margin-top: 4px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: var(--pill-red);
+      color: var(--red);
+      font-size: 13px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+    .form-error.show { display: block; }
+    .login-confirm {
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 6px;
+      background: var(--pill-amber);
+      text-align: center;
+    }
+    .login-confirm-text {
+      margin-bottom: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .login-confirm button {
+      width: 100%;
+    }
+    .site-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .site-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .site-row-info {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .site-row-name {
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .site-row-meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+      overflow-wrap: anywhere;
+    }
+    .site-row-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .site-row-actions button {
+      padding: 0 10px;
+      height: 30px;
+      font-size: 13px;
+    }
+    .btn-danger {
+      color: var(--red);
+      border-color: var(--red);
+    }
+    .modal-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 0 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+    @media (max-width: 820px) {
+      header { padding: 16px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      main { padding: 14px 16px 24px; }
+      .toolbar { grid-template-columns: 1fr; }
+      .summary { justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>relay2rate</h1>
+        <div class="meta" id="updated"></div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="refreshAll">刷新全部</button>
+        <select id="autoRefresh">
+          <option value="0">手动刷新</option>
+          <option value="300000">每 5 分钟</option>
+          <option value="900000">每 15 分钟</option>
+          <option value="1800000">每 30 分钟</option>
+        </select>
+        <button id="manageSites">管理平台</button>
+        <button id="themeToggle" title="切换主题" aria-label="切换主题">🌙</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="搜索分组名称或备注">
+      <select id="sort">
+        <option value="multiplier">倍率从低到高</option>
+        <option value="name">按分组排序</option>
+        <option value="concurrency">并发从高到低</option>
+      </select>
+      <div class="summary" id="summary"></div>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="channel-bar" id="channelBar"></div>
+    <div id="content"></div>
+  </main>
+  <div class="modal-overlay" id="manageModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">管理平台</div>
+        <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="site-list" id="siteList"></div>
+        <div class="modal-section-title" id="formTitle">添加平台</div>
+        <div class="form-row">
+          <label for="f-name">平台名称 *</label>
+          <input id="f-name" type="text" placeholder="平台名称">
+        </div>
+        <div class="form-row">
+          <label for="f-baseUrl">站点地址 *</label>
+          <input id="f-baseUrl" type="url" placeholder="https://example.com">
+        </div>
+        <div class="form-row">
+          <label for="f-framework">框架 *</label>
+          <select id="f-framework">
+            <option value="" disabled selected>请选择框架</option>
+            <option value="newapi">newapi</option>
+            <option value="sub2api">sub2api</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="f-username">账号 / 邮箱</label>
+          <input id="f-username" type="text" placeholder="登录用户名或邮箱">
+        </div>
+        <div class="form-row">
+          <label for="f-password">密码</label>
+          <input id="f-password" type="password" placeholder="登录密码">
+          <span class="form-hint" id="passwordHint"></span>
+        </div>
+        <div class="form-row">
+          <label for="f-token">Token（sub2api 可选）</label>
+          <input id="f-token" type="password" placeholder="已有的 access token">
+          <span class="form-hint" id="tokenHint"></span>
+        </div>
+        <input type="hidden" id="f-siteId">
+        <div class="login-confirm" id="loginConfirm" style="display:none;">
+          <div class="login-confirm-text" id="loginConfirmText"></div>
+          <button class="primary" id="loginConfirmBtn">我已完成登录</button>
+        </div>
+        <div class="form-error" id="formError"></div>
+        <div class="form-actions">
+          <button id="formCancel">取消</button>
+          <button class="primary" id="formSave">保存并验证</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const embeddedData = {};
+    let data = embeddedData;
+    let autoTimer = null;
+
+    const themeToggle = document.getElementById("themeToggle");
+    function applyTheme(theme) {
+      if (theme === "auto") {
+        document.documentElement.removeAttribute("data-theme");
+      } else {
+        document.documentElement.setAttribute("data-theme", theme);
+      }
+      try { localStorage.setItem("theme", theme); } catch {}
+      updateThemeIcon();
+    }
+    function currentResolvedTheme() {
+      const explicit = document.documentElement.getAttribute("data-theme");
+      if (explicit === "dark" || explicit === "light") return explicit;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    function updateThemeIcon() {
+      themeToggle.textContent = currentResolvedTheme() === "dark" ? "☀️" : "🌙";
+    }
+    (function initTheme() {
+      let saved = "auto";
+      try { saved = localStorage.getItem("theme") || "auto"; } catch {}
+      applyTheme(saved);
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateThemeIcon);
+    })();
+    themeToggle.addEventListener("click", () => {
+      const next = currentResolvedTheme() === "dark" ? "light" : "dark";
+      applyTheme(next);
+    });
+
+    const els = {
+      updated: document.getElementById("updated"),
+      refreshAll: document.getElementById("refreshAll"),
+      autoRefresh: document.getElementById("autoRefresh"),
+      search: document.getElementById("search"),
+      sort: document.getElementById("sort"),
+      summary: document.getElementById("summary"),
+      status: document.getElementById("status"),
+      content: document.getElementById("content"),
+      channelBar: document.getElementById("channelBar")
+    };
+
+    async function loadData() {
+      try {
+        const res = await fetch("/api/data", { cache: "no-store" });
+        if (res.ok) data = normalizePayload(await res.json());
+      } catch {
+        data = normalizePayload(data);
+      }
+      render();
+    }
+
+    async function refresh(siteId) {
+      setBusy(true);
+      setStatus("正在刷新 " + (siteId === "all" ? "全部站点" : siteId) + "...");
+      try {
+        const res = await fetch("/api/refresh?site=" + encodeURIComponent(siteId), { method: "POST" });
+        const body = await res.json();
+        if (!res.ok || !body.ok) throw new Error(body.error || "刷新失败");
+        if (siteId === "all") {
+          data = normalizePayload(body.data);
+        } else {
+          const allSites = normalizePayload(body.data).sites || [];
+          const updated = allSites.find(s => s.siteId === siteId);
+          if (updated) {
+            const sites = (normalizePayload(data).sites || []).map(s => s.siteId === siteId ? updated : s);
+            data = { ...normalizePayload(data), sites, groups: sites.flatMap(s => s.groups || []) };
+          } else {
+            data = normalizePayload(body.data);
+          }
+        }
+        setStatus("刷新完成");
+      } catch (error) {
+        setStatus(error.message || String(error), true);
+        await loadData();
+        return;
+      } finally {
+        setBusy(false);
+      }
+      render();
+    }
+
+    function render() {
+      data = normalizePayload(data);
+      const hidden = getHiddenSites();
+      const allSites = sortSitesByOrder(data.sites || []);
+      const sites = allSites.filter(s => !hidden.has(s.siteId));
+      const allGroups = (data.groups || []).filter(g => !hidden.has(g.siteId));
+      const best = Math.min(...allGroups.map(group => Number(group.multiplier)).filter(Number.isFinite));
+
+      els.updated.textContent = "最后聚合：" + formatDate(data.scrapedAt) + "，平台 " + allSites.length + " 个，分组 " + allGroups.length + " 个";
+
+      renderChannelBar(allSites, hidden);
+
+      const query = els.search.value.trim().toLowerCase();
+      const sort = els.sort.value;
+
+      const sortGroups = (arr) => arr.slice().sort((a, b) => {
+        if (sort === "name") return String(a.name).localeCompare(String(b.name), "zh-CN");
+        if (sort === "concurrency") return (Number(b.concurrency) || 0) - (Number(a.concurrency) || 0);
+        return Number(a.multiplier || 0) - Number(b.multiplier || 0);
+      });
+
+      const matchGroup = (group) => {
+        const haystack = [group.name, group.description].filter(Boolean).join(" ").toLowerCase();
+        return !query || haystack.includes(query);
+      };
+
+      let totalShown = 0;
+      const columns = sites.map(site => {
+        const matched = sortGroups((site.groups || []).filter(matchGroup));
+        totalShown += matched.length;
+        return renderColumn(site, matched, best);
+      }).join("");
+
+      els.summary.textContent = "显示 " + totalShown + " / " + allGroups.length;
+      if (!sites.length || !totalShown) {
+        els.content.innerHTML = '<div class="empty">没有可显示的分组</div>';
+        return;
+      }
+      els.content.innerHTML = '<div class="columns">' + columns + '</div>';
+    }
+
+    function renderChannelBar(allSites, hidden) {
+      if (!allSites.length) { els.channelBar.innerHTML = ""; return; }
+      els.channelBar.innerHTML = allSites.map(site => {
+        const visible = !hidden.has(site.siteId);
+        return '<label class="channel-chip' + (visible ? " active" : "") + '" draggable="true" data-channel="' + escapeHtml(site.siteId) + '">' +
+          '<input type="checkbox" data-channel="' + escapeHtml(site.siteId) + '"' + (visible ? " checked" : "") + '>' +
+          escapeHtml(site.name || site.siteId) +
+          '</label>';
+      }).join("");
+    }
+
+    let dragSourceId = null;
+    els.channelBar.addEventListener("dragstart", (event) => {
+      const chip = event.target.closest(".channel-chip");
+      if (!chip) return;
+      dragSourceId = chip.getAttribute("data-channel");
+      chip.classList.add("dragging");
+      event.dataTransfer.effectAllowed = "move";
+      if (event.dataTransfer.setData) event.dataTransfer.setData("text/plain", dragSourceId);
+    });
+    els.channelBar.addEventListener("dragend", (event) => {
+      const chip = event.target.closest(".channel-chip");
+      if (chip) chip.classList.remove("dragging");
+      dragSourceId = null;
+    });
+    els.channelBar.addEventListener("dragover", (event) => {
+      const chip = event.target.closest(".channel-chip");
+      if (!chip) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    });
+    els.channelBar.addEventListener("drop", (event) => {
+      const chip = event.target.closest(".channel-chip");
+      if (!chip || !dragSourceId) return;
+      event.preventDefault();
+      const targetId = chip.getAttribute("data-channel");
+      if (targetId === dragSourceId) return;
+      const order = getChannelOrder();
+      const allIds = (data.sites || []).map(s => s.siteId);
+      const fullOrder = order.filter(id => allIds.includes(id));
+      allIds.forEach(id => { if (!fullOrder.includes(id)) fullOrder.push(id); });
+      const fromIdx = fullOrder.indexOf(dragSourceId);
+      const toIdx = fullOrder.indexOf(targetId);
+      if (fromIdx === -1 || toIdx === -1) return;
+      fullOrder.splice(fromIdx, 1);
+      fullOrder.splice(toIdx, 0, dragSourceId);
+      setChannelOrder(fullOrder);
+      render();
+    });
+
+    els.channelBar.addEventListener("change", (event) => {
+      const siteId = event.target.getAttribute("data-channel");
+      if (!siteId) return;
+      const hidden = getHiddenSites();
+      if (event.target.checked) hidden.delete(siteId);
+      else hidden.add(siteId);
+      setHiddenSites(hidden);
+      render();
+    });
+
+    function renderColumn(site, groups, best) {
+      const ok = !site.error;
+      const pill = '<span class="pill ' + (ok ? "" : "error") + '">' + (ok ? "正常" : "失败") + '</span>';
+      const balanceHtml = formatBalance(site.balance);
+      const refreshBtn = '<button class="column-refresh" data-refresh="' + escapeHtml(site.siteId) + '">刷新</button>';
+      const head = '<div class="column-head">' +
+        '<div class="column-title"><div class="column-name">' + escapeHtml(site.provider || site.siteId) + '</div>' + pill + refreshBtn + '</div>' +
+        '<div class="column-sub">' + escapeHtml(site.sourceUrl || site.siteId) + '</div>' +
+        '<div class="column-stats"><span>分组 ' + groups.length + ' 个</span><span>' + escapeHtml(site.framework || "-") + '</span>' + balanceHtml + '<span>' + formatDate(site.scrapedAt) + '</span></div>' +
+        '</div>';
+
+      if (site.error && !groups.length) {
+        return '<div class="column">' + head + '<div class="column-error">' + escapeHtml(site.error) + '</div></div>';
+      }
+      if (!groups.length) {
+        return '<div class="column">' + head + '<div class="empty">无匹配分组</div></div>';
+      }
+
+      const list = '<div class="group-list">' + groups.map(group => {
+        const multiplier = Number(group.multiplier);
+        const multClass = multiplier === best ? "multiplier best" : multiplier >= 1 ? "multiplier warn" : "multiplier";
+        const prev = group.prevMultiplier;
+        let deltaHtml = "";
+        if (prev !== undefined && Number.isFinite(Number(prev)) && Number(prev) !== multiplier) {
+          const diff = multiplier - Number(prev);
+          const sign = diff > 0 ? "+" : "";
+          const cls = diff > 0 ? "up" : "down";
+          const arrow = diff > 0 ? "↑" : "↓";
+          const absStr = String(Number(prev));
+          deltaHtml = '<span class="mult-delta ' + cls + '" title="上次 ' + escapeHtml(absStr) + 'x">' + arrow + sign + diff.toFixed(2).replace(/\.?0+$/, "") + '</span>';
+        }
+        return '<div class="group-item">' +
+          '<div class="group-info"><div class="group-name">' + escapeHtml(group.name) + '</div>' +
+          (group.description ? '<div class="desc">' + escapeHtml(group.description) + '</div>' : '') + '</div>' +
+          '<div class="group-side"><span class="mult-wrap"><span class="' + multClass + '">' + escapeHtml(String(group.multiplier)) + 'x</span>' + deltaHtml + '</span>' +
+          (group.concurrency != null ? '<span class="group-conc">并发 ' + escapeHtml(String(group.concurrency)) + '</span>' : '') + '</div>' +
+          '</div>';
+      }).join("") + '</div>';
+
+      return '<div class="column">' + head + list + '</div>';
+    }
+
+    function normalizePayload(input) {
+      if (input && Array.isArray(input.sites)) return input;
+      if (input && Array.isArray(input.groups)) {
+        return {
+          provider: "All",
+          siteId: "all",
+          scrapedAt: input.scrapedAt,
+          sites: [{
+            provider: input.provider,
+            siteId: input.siteId,
+            framework: input.framework,
+            sourceUrl: input.sourceUrl,
+            scrapedAt: input.scrapedAt,
+            groups: input.groups
+          }],
+          groups: input.groups.map(group => ({
+            ...group,
+            provider: input.provider,
+            siteId: input.siteId,
+            framework: input.framework,
+            sourceUrl: input.sourceUrl,
+            scrapedAt: input.scrapedAt
+          }))
+        };
+      }
+      return { sites: [], groups: [], scrapedAt: new Date().toISOString() };
+    }
+
+    function setBusy(isBusy) {
+      els.refreshAll.disabled = isBusy;
+    }
+
+    function setStatus(message, isError = false) {
+      els.status.textContent = message || "";
+      els.status.className = isError ? "status error" : "status";
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      const time = new Date(value);
+      if (Number.isNaN(time.getTime())) return "-";
+      return time.toLocaleString();
+    }
+
+    function formatBalance(balance) {
+      if (!balance) return "";
+      let amount = null;
+      if (balance.currency === "USD") {
+        amount = balance.balance;
+      } else if (balance.currency === "quota") {
+        amount = balance.quota != null ? balance.quota / 500000 : null;
+      }
+      if (amount == null) return "";
+      const cls = amount <= 0 ? "none" : amount < 1 ? "low" : "";
+      return '<span class="balance ' + cls + '">余额 $' + amount.toFixed(2) + '</span>';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    els.refreshAll.addEventListener("click", () => refresh("all"));
+    els.autoRefresh.addEventListener("change", () => {
+      if (autoTimer) clearInterval(autoTimer);
+      const interval = Number(els.autoRefresh.value);
+      if (interval > 0) autoTimer = setInterval(() => refresh("all"), interval);
+    });
+    els.search.addEventListener("input", render);
+    els.sort.addEventListener("change", render);
+
+    els.content.addEventListener("click", (event) => {
+      const siteId = event.target.getAttribute("data-refresh");
+      if (siteId) refresh(siteId);
+    });
+
+    const modal = {
+      overlay: document.getElementById("manageModal"),
+      close: document.getElementById("modalClose"),
+      siteList: document.getElementById("siteList"),
+      formTitle: document.getElementById("formTitle"),
+      fName: document.getElementById("f-name"),
+      fBaseUrl: document.getElementById("f-baseUrl"),
+      fFramework: document.getElementById("f-framework"),
+      fUsername: document.getElementById("f-username"),
+      fPassword: document.getElementById("f-password"),
+      fToken: document.getElementById("f-token"),
+      fSiteId: document.getElementById("f-siteId"),
+      passwordHint: document.getElementById("passwordHint"),
+      tokenHint: document.getElementById("tokenHint"),
+      formError: document.getElementById("formError"),
+      loginConfirm: document.getElementById("loginConfirm"),
+      loginConfirmText: document.getElementById("loginConfirmText"),
+      loginConfirmBtn: document.getElementById("loginConfirmBtn"),
+      cancel: document.getElementById("formCancel"),
+      save: document.getElementById("formSave"),
+      manageBtn: document.getElementById("manageSites")
+    };
+
+    function showFormError(message) {
+      modal.formError.textContent = message;
+      modal.formError.classList.add("show");
+    }
+    function clearFormError() {
+      modal.formError.classList.remove("show");
+      modal.formError.textContent = "";
+    }
+
+    function openModal() {
+      modal.overlay.classList.add("open");
+      loadSiteList();
+      resetForm();
+    }
+    function closeModal() {
+      modal.overlay.classList.remove("open");
+      hideLoginConfirm();
+      modal.save.disabled = false;
+      modal.save.textContent = "保存并验证";
+      clearFormError();
+      resetForm();
+    }
+    function resetForm() {
+      modal.fSiteId.value = "";
+      modal.formTitle.textContent = "添加平台";
+      modal.fName.value = "";
+      modal.fBaseUrl.value = "";
+      modal.fFramework.value = "";
+      modal.fUsername.value = "";
+      modal.fPassword.value = "";
+      modal.fToken.value = "";
+      modal.passwordHint.textContent = "";
+      modal.tokenHint.textContent = "";
+      clearFormError();
+    }
+    function fillForm(site) {
+      modal.fSiteId.value = site.siteId;
+      modal.formTitle.textContent = "编辑平台：" + (site.name || site.siteId);
+      modal.fName.value = site.name || "";
+      modal.fBaseUrl.value = site.baseUrl || "";
+      modal.fFramework.value = site.framework || "";
+      modal.fUsername.value = site.username || "";
+      modal.fPassword.value = "";
+      modal.fToken.value = "";
+      modal.passwordHint.textContent = site.password === "已配置" ? "已配置，留空则不修改" : "";
+      modal.tokenHint.textContent = site.token === "已配置" ? "已配置，留空则不修改" : "";
+    }
+
+    function getHiddenSites() {
+      try { return new Set(JSON.parse(localStorage.getItem("hiddenSites") || "[]")); } catch { return new Set(); }
+    }
+    function setHiddenSites(set) {
+      localStorage.setItem("hiddenSites", JSON.stringify([...set]));
+    }
+    function getChannelOrder() {
+      try { return JSON.parse(localStorage.getItem("channelOrder") || "[]"); } catch { return []; }
+    }
+    function setChannelOrder(order) {
+      localStorage.setItem("channelOrder", JSON.stringify(order));
+    }
+    function sortSitesByOrder(sites) {
+      const order = getChannelOrder();
+      if (!order.length) return sites;
+      const indexById = new Map(order.map((id, i) => [id, i]));
+      return sites.slice().sort((a, b) => {
+        const ia = indexById.has(a.siteId) ? indexById.get(a.siteId) : order.length;
+        const ib = indexById.has(b.siteId) ? indexById.get(b.siteId) : order.length;
+        if (ia !== ib) return ia - ib;
+        return String(a.name || a.siteId).localeCompare(String(b.name || b.siteId), "zh-CN");
+      });
+    }
+
+    async function loadSiteList() {
+      try {
+        const res = await fetch("/api/config", { cache: "no-store" });
+        const body = await res.json();
+        if (!body.ok) throw new Error(body.error || "加载失败");
+        renderSiteList(body.sites || []);
+      } catch (error) {
+        modal.siteList.innerHTML = '<div class="site-row-meta">加载失败：' + escapeHtml(error.message) + '</div>';
+      }
+    }
+
+    function renderSiteList(sites) {
+      if (!sites.length) {
+        modal.siteList.innerHTML = '<div class="site-row-meta">暂无平台，在下方添加</div>';
+        return;
+      }
+      modal.siteList.innerHTML = sites.map(site => {
+        const cred = [site.username, site.password, site.token].filter(v => v && v !== "已配置" && v !== "").length > 0 || site.password === "已配置" || site.token === "已配置";
+        return '<div class="site-row"><div class="site-row-info">' +
+          '<div class="site-row-name">' + escapeHtml(site.name || site.siteId) + '</div>' +
+          '<div class="site-row-meta">' + escapeHtml(site.baseUrl || "") + ' · ' + escapeHtml(site.framework || "-") + (cred ? ' · 凭证已配置' : ' · 未配置凭证') + '</div>' +
+          '</div><div class="site-row-actions">' +
+          '<button data-edit="' + escapeHtml(site.siteId) + '">编辑</button>' +
+          '<button class="btn-danger" data-delete="' + escapeHtml(site.siteId) + '">删除</button>' +
+          '</div></div>';
+      }).join("");
+    }
+
+    modal.siteList.addEventListener("click", async (event) => {
+      const editId = event.target.getAttribute("data-edit");
+      const deleteId = event.target.getAttribute("data-delete");
+      if (editId) {
+        try {
+          const res = await fetch("/api/config", { cache: "no-store" });
+          const body = await res.json();
+          const site = (body.sites || []).find(s => s.siteId === editId);
+          if (site) fillForm(site);
+        } catch {}
+      }
+      if (deleteId) {
+        if (!confirm("确认删除平台 " + deleteId + "？")) return;
+        try {
+          const res = await fetch("/api/config/site?site=" + encodeURIComponent(deleteId), { method: "DELETE" });
+          const body = await res.json();
+          if (!body.ok) throw new Error(body.error || "删除失败");
+          await loadSiteList();
+          await loadData();
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+    });
+
+    let loginPollTimer = null;
+
+    function showLoginConfirm(siteName) {
+      modal.loginConfirmText.textContent = `请在弹出的浏览器中完成「${siteName}」的登录验证，完成后点击下方按钮。`;
+      modal.loginConfirm.style.display = "block";
+    }
+    function hideLoginConfirm() {
+      modal.loginConfirm.style.display = "none";
+      if (loginPollTimer) { clearInterval(loginPollTimer); loginPollTimer = null; }
+    }
+
+    function startLoginPoll() {
+      hideLoginConfirm();
+      loginPollTimer = setInterval(async () => {
+        try {
+          const res = await fetch("/api/login/pending", { cache: "no-store" });
+          const body = await res.json();
+          if (body.pending) {
+            showLoginConfirm(body.siteName || body.siteId);
+          } else {
+            hideLoginConfirm();
+          }
+        } catch {}
+      }, 2000);
+    }
+
+    modal.loginConfirmBtn.addEventListener("click", async () => {
+      modal.loginConfirmBtn.disabled = true;
+      try {
+        await fetch("/api/login/confirm", { method: "POST" });
+      } catch {}
+      modal.loginConfirmBtn.disabled = false;
+      hideLoginConfirm();
+    });
+
+    modal.save.addEventListener("click", async () => {
+      clearFormError();
+      const payload = {
+        siteId: modal.fSiteId.value || undefined,
+        name: modal.fName.value.trim(),
+        baseUrl: modal.fBaseUrl.value.trim(),
+        framework: modal.fFramework.value,
+        username: modal.fUsername.value.trim(),
+        password: modal.fPassword.value,
+        token: modal.fToken.value
+      };
+      modal.save.disabled = true;
+      const originalText = modal.save.textContent;
+      modal.save.textContent = "验证采集中...";
+      startLoginPoll();
+      try {
+        const testRes = await fetch("/api/config/site/test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const testBody = await testRes.json();
+        if (!testBody.ok) {
+          throw new Error(testBody.error || "采集验证失败");
+        }
+
+        modal.save.textContent = "保存中...";
+        const res = await fetch("/api/config/site", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const body = await res.json();
+        if (!body.ok) throw new Error(body.error || "保存失败");
+
+        resetForm();
+        await loadSiteList();
+        closeModal();
+        const savedSiteId = body.siteId;
+        if (savedSiteId) {
+          try {
+            await fetch("/api/refresh?site=" + encodeURIComponent(savedSiteId), { method: "POST" });
+          } catch (e) { /* 忽略采集错误，用户可手动刷新 */ }
+        }
+        await loadData();
+      } catch (error) {
+        showFormError(error.message || String(error));
+      } finally {
+        hideLoginConfirm();
+        modal.save.disabled = false;
+        modal.save.textContent = originalText;
+      }
+    });
+
+    modal.manageBtn.addEventListener("click", openModal);
+    modal.close.addEventListener("click", closeModal);
+    modal.cancel.addEventListener("click", closeModal);
+    modal.overlay.addEventListener("click", (event) => {
+      if (event.target === modal.overlay) closeModal();
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

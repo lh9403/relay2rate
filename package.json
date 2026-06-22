@@ -1,0 +1,13 @@
+{
+  "name": "relay2rate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scrape": "node scripts/scrape.js --site all",
+    "start": "node scripts/server.js"
+  },
+  "dependencies": {
+    "playwright": "^1.53.1"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "sites": {
+    "example": {
+      "name": "示例站点",
+      "baseUrl": "https://example.com",
+      "framework": "newapi",
+      "username": "你的用户名或邮箱",
+      "password": "你的密码"
+    }
+  }
+}

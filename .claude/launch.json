@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "price-watch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/server.js"],
+      "autoPort": true
+    }
+  ]
+}
