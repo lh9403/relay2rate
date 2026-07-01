@@ -342,6 +342,24 @@
       background: var(--pill-green);
       color: var(--green);
     }
+    .group-item.is-new {
+      border-left: 3px solid var(--green);
+    }
+    .mult-delta.new-group {
+      background: var(--pill-blue);
+      color: var(--blue);
+    }
+    .group-item.is-gone {
+      opacity: 0.55;
+      border-left: 3px solid var(--amber);
+    }
+    .group-item.is-gone .group-name {
+      text-decoration: line-through;
+    }
+    .mult-delta.gone {
+      background: var(--pill-amber);
+      color: var(--amber);
+    }
     .status {
       min-height: 20px;
       margin: 0 0 10px;
@@ -753,8 +771,9 @@
       let totalShown = 0;
       const columns = sites.map(site => {
         const matched = sortGroups((site.groups || []).filter(matchGroup));
+        const disappeared = (site.disappearedGroups || []).filter(matchGroup);
         totalShown += matched.length;
-        return renderColumn(site, matched, best);
+        return renderColumn(site, matched, best, disappeared);
       }).join("");
 
       els.summary.textContent = "显示 " + totalShown + " / " + allGroups.length;
@@ -825,7 +844,8 @@
       render();
     });
 
-    function renderColumn(site, groups, best) {
+    function renderColumn(site, groups, best, disappeared) {
+      disappeared = disappeared || [];
       const ok = !site.error;
       const pill = '<span class="pill ' + (ok ? "" : "error") + '">' + (ok ? "正常" : "失败") + '</span>';
       const balanceHtml = formatBalance(site.balance);
@@ -836,19 +856,22 @@
         '<div class="column-stats"><span>分组 ' + groups.length + ' 个</span><span>' + escapeHtml(site.framework || "-") + '</span>' + balanceHtml + '<span>' + formatDate(site.scrapedAt) + '</span></div>' +
         '</div>';
 
-      if (site.error && !groups.length) {
+      if (site.error && !groups.length && !disappeared.length) {
         return '<div class="column">' + head + '<div class="column-error">' + escapeHtml(site.error) + '</div></div>';
       }
-      if (!groups.length) {
+      if (!groups.length && !disappeared.length) {
         return '<div class="column">' + head + '<div class="empty">无匹配分组</div></div>';
       }
 
       const list = '<div class="group-list">' + groups.map(group => {
         const multiplier = Number(group.multiplier);
         const multClass = multiplier === best ? "multiplier best" : multiplier >= 1 ? "multiplier warn" : "multiplier";
+        const isNew = !!group.isNew;
         const prev = group.prevMultiplier;
         let deltaHtml = "";
-        if (prev !== undefined && Number.isFinite(Number(prev)) && Number(prev) !== multiplier) {
+        if (isNew) {
+          deltaHtml = '<span class="mult-delta new-group">NEW</span>';
+        } else if (prev !== undefined && Number.isFinite(Number(prev)) && Number(prev) !== multiplier) {
           const diff = multiplier - Number(prev);
           const sign = diff > 0 ? "+" : "";
           const cls = diff > 0 ? "up" : "down";
@@ -856,11 +879,18 @@
           const absStr = String(Number(prev));
           deltaHtml = '<span class="mult-delta ' + cls + '" title="上次 ' + escapeHtml(absStr) + 'x">' + arrow + sign + diff.toFixed(2).replace(/\.?0+$/, "") + '</span>';
         }
-        return '<div class="group-item">' +
+        return '<div class="group-item' + (isNew ? ' is-new' : '') + '">' +
           '<div class="group-info"><div class="group-name">' + escapeHtml(group.name) + '</div>' +
           (group.description ? '<div class="desc">' + escapeHtml(group.description) + '</div>' : '') + '</div>' +
           '<div class="group-side"><span class="mult-wrap"><span class="' + multClass + '">' + escapeHtml(String(group.multiplier)) + 'x</span>' + deltaHtml + '</span>' +
           (group.concurrency != null ? '<span class="group-conc">并发 ' + escapeHtml(String(group.concurrency)) + '</span>' : '') + '</div>' +
+          '</div>';
+      }).join("") + disappeared.map(g => {
+        return '<div class="group-item is-gone">' +
+          '<div class="group-info"><div class="group-name">' + escapeHtml(g.name) + '</div>' +
+          (g.description ? '<div class="desc">' + escapeHtml(g.description) + '</div>' : '') + '</div>' +
+          '<div class="group-side"><span class="mult-wrap"><span class="multiplier">' + escapeHtml(String(g.multiplier)) + 'x</span>' +
+          '<span class="mult-delta gone">✕ 消失</span></span></div>' +
           '</div>';
       }).join("") + '</div>';
 

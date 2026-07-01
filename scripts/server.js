@@ -99,14 +99,30 @@ function attachPrevMultiplier(payload) {
     for (const g of prev.groups) {
       if (g?.name != null) prevMap.set(String(g.name), Number(g.multiplier));
     }
+    const curNames = new Set();
     for (const group of site.groups || []) {
       if (group?.name == null) continue;
-      const prevVal = prevMap.get(String(group.name));
-      if (prevVal === undefined) continue;
+      const name = String(group.name);
+      curNames.add(name);
+      const prevVal = prevMap.get(name);
+      if (prevVal === undefined) {
+        group.isNew = true;
+        continue;
+      }
       const cur = Number(group.multiplier);
       if (Number.isFinite(prevVal) && Number.isFinite(cur) && prevVal !== cur) {
         group.prevMultiplier = prevVal;
       }
+    }
+    const disappeared = [];
+    for (const [name, multiplier] of prevMap) {
+      if (!curNames.has(name) && Number.isFinite(multiplier)) {
+        disappeared.push({ name, multiplier });
+      }
+    }
+    if (disappeared.length) {
+      site.disappearedGroups = disappeared.sort((a, b) =>
+        a.name.localeCompare(b.name, "zh-CN"));
     }
   }
   return payload;
