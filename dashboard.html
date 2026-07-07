@@ -26,6 +26,8 @@
       --amber: #a15c07;
       --primary-bg: #155b9f;
       --primary-text: #ffffff;
+      --primary-soft: #e8f1fb;
+      --primary-ring: rgba(21, 91, 159, 0.22);
     }
     :root[data-theme="dark"] {
       color-scheme: dark;
@@ -48,6 +50,8 @@
       --amber: #f0c050;
       --primary-bg: #2b6cb0;
       --primary-text: #ffffff;
+      --primary-soft: rgba(43, 108, 176, 0.22);
+      --primary-ring: rgba(107, 164, 224, 0.25);
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
@@ -71,6 +75,8 @@
         --amber: #f0c050;
         --primary-bg: #2b6cb0;
         --primary-text: #ffffff;
+        --primary-soft: rgba(43, 108, 176, 0.22);
+        --primary-ring: rgba(107, 164, 224, 0.25);
       }
     }
     * { box-sizing: border-box; }
@@ -139,6 +145,25 @@
       cursor: wait;
       opacity: 0.65;
     }
+    button.is-loading {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    button.is-loading::before {
+      content: "";
+      width: 13px;
+      height: 13px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 999px;
+      animation: spin .75s linear infinite;
+      flex-shrink: 0;
+    }
+    button.is-loading:disabled {
+      opacity: 1;
+    }
     input, select {
       padding: 0 10px;
     }
@@ -174,6 +199,28 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       overflow: hidden;
+      position: relative;
+      transition: border-color .16s, box-shadow .16s, opacity .16s;
+    }
+    .column.is-refreshing {
+      border-color: var(--primary-bg);
+      box-shadow: 0 0 0 3px var(--primary-ring);
+    }
+    .column.is-refreshing::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--primary-bg), transparent);
+      background-size: 180% 100%;
+      animation: refreshBar 1.05s linear infinite;
+      z-index: 1;
+    }
+    .column.is-refreshing .column-head {
+      background: var(--primary-soft);
+    }
+    #content.site-refreshing .column:not(.is-refreshing) {
+      opacity: .52;
     }
     .column-head {
       padding: 14px 16px;
@@ -200,6 +247,10 @@
     }
     .column-refresh:disabled {
       cursor: wait;
+    }
+    .column-refresh.is-loading {
+      min-width: 78px;
+      padding: 0 9px;
     }
     .column-sub {
       color: var(--muted);
@@ -366,6 +417,40 @@
       color: var(--muted);
       font-size: 13px;
       flex-shrink: 0;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      transition: background .16s, border-color .16s, color .16s;
+    }
+    .status:not(:empty) {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--panel);
+      border-color: var(--line);
+    }
+    .status.busy {
+      color: var(--blue);
+      background: var(--primary-soft);
+      border-color: var(--primary-bg);
+      font-weight: 650;
+    }
+    .status.busy::before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 999px;
+      animation: spin .75s linear infinite;
+      flex-shrink: 0;
+    }
+    .status.success {
+      color: var(--green);
+      background: var(--pill-green);
+      border-color: var(--green);
+      font-weight: 650;
     }
     .channel-bar {
       display: flex;
@@ -410,7 +495,12 @@
       min-height: 0;
       overflow-y: auto;
     }
-    .status.error { color: var(--red); }
+    .status.error {
+      color: var(--red);
+      background: var(--pill-red);
+      border-color: var(--red);
+      font-weight: 650;
+    }
     .empty {
       padding: 36px;
       text-align: center;
@@ -568,6 +658,13 @@
       .toolbar { grid-template-columns: 1fr; }
       .summary { justify-self: start; }
     }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes refreshBar {
+      from { background-position: 180% 0; }
+      to { background-position: -180% 0; }
+    }
   </style>
 </head>
 <body>
@@ -600,7 +697,7 @@
       </select>
       <div class="summary" id="summary"></div>
     </div>
-    <div class="status" id="status"></div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
     <div class="channel-bar" id="channelBar"></div>
     <div id="content"></div>
   </main>
@@ -660,6 +757,8 @@
     const embeddedData = {};
     let data = embeddedData;
     let autoTimer = null;
+    let activeRefreshSiteId = null;
+    let refreshAllState = null;
 
     const themeToggle = document.getElementById("themeToggle");
     function applyTheme(theme) {
@@ -713,33 +812,108 @@
     }
 
     async function refresh(siteId) {
-      setBusy(true);
-      setStatus("正在刷新 " + (siteId === "all" ? "全部站点" : siteId) + "...");
+      if (isRefreshBusy()) return;
+      if (siteId === "all") {
+        await refreshAllIncrementally();
+        return;
+      }
+      await refreshOneSite(siteId);
+    }
+
+    async function refreshOneSite(siteId) {
+      const targetName = siteId === "all" ? "全部站点" : getSiteLabel(siteId);
+      const startedAt = Date.now();
+      const updateProgress = () => {
+        const seconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+        setStatus("正在刷新 " + targetName + "... 已用 " + seconds + " 秒", "busy");
+      };
+      setBusy(true, siteId);
+      updateProgress();
+      const progressTimer = setInterval(updateProgress, 1000);
       try {
-        const res = await fetch("/api/refresh?site=" + encodeURIComponent(siteId), { method: "POST" });
-        const body = await res.json();
-        if (!res.ok || !body.ok) throw new Error(body.error || "刷新失败");
-        if (siteId === "all") {
-          data = normalizePayload(body.data);
-        } else {
-          const allSites = normalizePayload(body.data).sites || [];
-          const updated = allSites.find(s => s.siteId === siteId);
-          if (updated) {
-            const sites = (normalizePayload(data).sites || []).map(s => s.siteId === siteId ? updated : s);
-            data = { ...normalizePayload(data), sites, groups: sites.flatMap(s => s.groups || []) };
-          } else {
-            data = normalizePayload(body.data);
-          }
-        }
-        setStatus("刷新完成");
+        const refreshedPayload = await requestRefresh(siteId);
+        setStatus(buildRefreshDoneMessage(siteId, refreshedPayload, Date.now() - startedAt), "success");
       } catch (error) {
-        setStatus(error.message || String(error), true);
-        await loadData();
+        if (!error.payload) await loadData();
+        setStatus(error.message || String(error), "error");
         return;
       } finally {
+        clearInterval(progressTimer);
         setBusy(false);
       }
-      render();
+    }
+
+    async function refreshAllIncrementally() {
+      const siteIds = await getRefreshSiteIds();
+      if (!siteIds.length) {
+        setStatus("暂无可刷新的平台", "error");
+        return;
+      }
+
+      const startedAt = Date.now();
+      const failures = [];
+      refreshAllState = { current: 0, done: 0, total: siteIds.length };
+
+      for (let i = 0; i < siteIds.length; i++) {
+        const currentSiteId = siteIds[i];
+        const targetName = getSiteLabel(currentSiteId);
+        const siteStartedAt = Date.now();
+        const updateProgress = () => {
+          const seconds = Math.max(1, Math.round((Date.now() - siteStartedAt) / 1000));
+          setStatus("正在刷新 " + targetName + "（" + (i + 1) + "/" + siteIds.length + "）... 已用 " + seconds + " 秒", "busy");
+        };
+
+        refreshAllState.current = i + 1;
+        setBusy(true, currentSiteId);
+        updateProgress();
+        const progressTimer = setInterval(updateProgress, 1000);
+
+        try {
+          const refreshedPayload = await requestRefresh(currentSiteId);
+          const refreshedSite = (refreshedPayload.sites || []).find(s => s.siteId === currentSiteId);
+          refreshAllState.done = i + 1;
+          applyRefreshUi();
+          render();
+          setStatus("已刷新 " + targetName + "（" + (i + 1) + "/" + siteIds.length + "），分组 " + ((refreshedSite?.groups || []).length) + " 个", "success");
+        } catch (error) {
+          failures.push({ siteId: currentSiteId, name: targetName, error: error.message || String(error) });
+          refreshAllState.done = i + 1;
+          applyRefreshUi();
+          if (!error.payload) await loadData();
+          else render();
+          setStatus(targetName + " 刷新失败（" + (i + 1) + "/" + siteIds.length + "），继续刷新下一个：" + (error.message || String(error)), "error");
+        } finally {
+          clearInterval(progressTimer);
+        }
+      }
+
+      const elapsed = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+      const total = siteIds.length;
+      refreshAllState = null;
+      setBusy(false);
+      if (failures.length) {
+        setStatus("刷新完成：成功 " + (total - failures.length) + "/" + total + "，失败 " + failures.length + " 个，用时 " + elapsed + " 秒", "error");
+      } else {
+        const normalized = normalizePayload(data);
+        setStatus("刷新完成：平台 " + total + " 个，分组 " + (normalized.groups || []).length + " 个，用时 " + elapsed + " 秒", "success");
+      }
+    }
+
+    async function requestRefresh(siteId) {
+      const res = await fetch("/api/refresh?site=" + encodeURIComponent(siteId), { method: "POST" });
+      let body = null;
+      try {
+        body = await res.json();
+      } catch {
+        throw new Error("刷新失败");
+      }
+      const refreshedPayload = body?.data ? mergeRefreshedPayload(siteId, body.data) : null;
+      if (!res.ok || !body.ok) {
+        const error = new Error(body?.error || "刷新失败");
+        error.payload = refreshedPayload;
+        throw error;
+      }
+      return refreshedPayload;
     }
 
     function render() {
@@ -847,9 +1021,12 @@
     function renderColumn(site, groups, best, disappeared) {
       disappeared = disappeared || [];
       const ok = !site.error;
+      const isRefreshing = activeRefreshSiteId === "all" || activeRefreshSiteId === site.siteId;
+      const columnClass = "column" + (isRefreshing ? " is-refreshing" : "");
       const pill = '<span class="pill ' + (ok ? "" : "error") + '">' + (ok ? "正常" : "失败") + '</span>';
       const balanceHtml = formatBalance(site.balance);
-      const refreshBtn = '<button class="column-refresh" data-refresh="' + escapeHtml(site.siteId) + '">刷新</button>';
+      const disabled = isRefreshBusy() ? " disabled" : "";
+      const refreshBtn = '<button class="column-refresh' + (isRefreshing ? ' is-loading' : '') + '" data-refresh="' + escapeHtml(site.siteId) + '"' + disabled + '>' + (isRefreshing ? '刷新中' : '刷新') + '</button>';
       const head = '<div class="column-head">' +
         '<div class="column-title"><div class="column-name">' + escapeHtml(site.provider || site.siteId) + '</div>' + pill + refreshBtn + '</div>' +
         '<div class="column-sub">' + escapeHtml(site.sourceUrl || site.siteId) + '</div>' +
@@ -857,10 +1034,10 @@
         '</div>';
 
       if (site.error && !groups.length && !disappeared.length) {
-        return '<div class="column">' + head + '<div class="column-error">' + escapeHtml(site.error) + '</div></div>';
+        return '<div class="' + columnClass + '">' + head + '<div class="column-error">' + escapeHtml(site.error) + '</div></div>';
       }
       if (!groups.length && !disappeared.length) {
-        return '<div class="column">' + head + '<div class="empty">无匹配分组</div></div>';
+        return '<div class="' + columnClass + '">' + head + '<div class="empty">无匹配分组</div></div>';
       }
 
       const list = '<div class="group-list">' + groups.map(group => {
@@ -894,7 +1071,7 @@
           '</div>';
       }).join("") + '</div>';
 
-      return '<div class="column">' + head + list + '</div>';
+      return '<div class="' + columnClass + '">' + head + list + '</div>';
     }
 
     function normalizePayload(input) {
@@ -925,13 +1102,106 @@
       return { sites: [], groups: [], scrapedAt: new Date().toISOString() };
     }
 
-    function setBusy(isBusy) {
-      els.refreshAll.disabled = isBusy;
+    async function getRefreshSiteIds() {
+      const currentSites = sortSitesByOrder(normalizePayload(data).sites || []);
+      if (currentSites.length) {
+        return [...new Set(currentSites.map(site => site.siteId).filter(Boolean))];
+      }
+      try {
+        const res = await fetch("/api/config", { cache: "no-store" });
+        const body = await res.json();
+        if (body.ok && Array.isArray(body.sites)) {
+          return [...new Set(sortSitesByOrder(body.sites).map(site => site.siteId).filter(Boolean))];
+        }
+      } catch {}
+      return [];
     }
 
-    function setStatus(message, isError = false) {
+    function mergeRefreshedPayload(siteId, payload) {
+      const refreshedPayload = normalizePayload(payload);
+      if (siteId === "all") {
+        data = refreshedPayload;
+        render();
+        return refreshedPayload;
+      }
+
+      const updated = (refreshedPayload.sites || []).find(site => site.siteId === siteId);
+      if (!updated) {
+        data = refreshedPayload;
+        render();
+        return refreshedPayload;
+      }
+
+      const current = normalizePayload(data);
+      const currentSites = current.sites || [];
+      const hasSite = currentSites.some(site => site.siteId === siteId);
+      const sites = hasSite
+        ? currentSites.map(site => site.siteId === siteId ? updated : site)
+        : [...currentSites, updated];
+
+      data = {
+        ...current,
+        scrapedAt: refreshedPayload.scrapedAt || current.scrapedAt,
+        sites,
+        groups: aggregateGroupsFromSites(sites)
+      };
+      render();
+      return refreshedPayload;
+    }
+
+    function aggregateGroupsFromSites(sites) {
+      return sites.flatMap(site => (site.groups || []).map(group => ({
+        ...group,
+        provider: site.provider,
+        siteId: site.siteId,
+        framework: site.framework,
+        sourceUrl: site.sourceUrl,
+        scrapedAt: site.scrapedAt
+      })));
+    }
+
+    function isRefreshBusy() {
+      return !!activeRefreshSiteId || !!refreshAllState;
+    }
+
+    function setBusy(isBusy, siteId = null) {
+      activeRefreshSiteId = isBusy ? siteId : null;
+      applyRefreshUi();
+      render();
+    }
+
+    function applyRefreshUi() {
+      const isBusy = isRefreshBusy();
+      els.refreshAll.disabled = isBusy;
+      els.refreshAll.textContent = refreshAllState
+        ? "刷新中 " + (refreshAllState.current || refreshAllState.done) + "/" + refreshAllState.total
+        : (isBusy ? "刷新中" : "刷新全部");
+      els.refreshAll.classList.toggle("is-loading", isBusy);
+      els.refreshAll.setAttribute("aria-busy", isBusy ? "true" : "false");
+      els.content.classList.toggle("refreshing", isBusy);
+      els.content.classList.toggle("site-refreshing", isBusy && activeRefreshSiteId !== "all");
+    }
+
+    function setStatus(message, kind = "") {
       els.status.textContent = message || "";
-      els.status.className = isError ? "status error" : "status";
+      const statusKind = kind === true ? "error" : kind;
+      els.status.className = ["status", statusKind].filter(Boolean).join(" ");
+    }
+
+    function getSiteLabel(siteId, payload = data) {
+      const site = (normalizePayload(payload).sites || []).find(s => s.siteId === siteId);
+      return site?.provider || site?.name || siteId;
+    }
+
+    function buildRefreshDoneMessage(siteId, payload, elapsedMs) {
+      const normalized = normalizePayload(payload);
+      const elapsed = Math.max(1, Math.round(elapsedMs / 1000));
+      if (siteId === "all") {
+        return "刷新完成：平台 " + (normalized.sites || []).length + " 个，分组 " + (normalized.groups || []).length + " 个，用时 " + elapsed + " 秒";
+      }
+      const site = (normalized.sites || []).find(s => s.siteId === siteId);
+      const label = getSiteLabel(siteId, normalized);
+      return "刷新完成：" + label + "，分组 " + ((site?.groups || []).length) + " 个，用时 " + elapsed + " 秒";
     }
 
     function formatDate(value) {

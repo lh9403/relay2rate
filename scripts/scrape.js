@@ -69,6 +69,7 @@ export async function runScrape(siteId = "all", options = {}) {
 
   const siteIds = siteId === "all" ? Object.keys(config.sites) : [siteId];
   const results = [];
+  const errors = [];
   let hadError = false;
 
   for (const currentSiteId of siteIds) {
@@ -88,8 +89,8 @@ export async function runScrape(siteId = "all", options = {}) {
       const result = buildErrorResult(currentSiteId, siteConfig, error);
       writeJson(resultPathForSite(currentSiteId), result);
       results.push(result);
+      errors.push({ siteId: currentSiteId, provider: result.provider, error: result.error });
       console.error(`${result.provider} 采集失败: ${result.error}`);
-      if (siteId !== "all") throw error;
     }
   }
 
@@ -109,7 +110,7 @@ export async function runScrape(siteId = "all", options = {}) {
   console.log(`历史记录: ${resolveFromRoot("data/history.jsonl")}`);
 
   const latest = readJsonIfExists(latestPath);
-  return { hadError, result: latest };
+  return { hadError, errors, result: latest };
 }
 
 // CLI 入口

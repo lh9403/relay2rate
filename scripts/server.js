@@ -213,9 +213,18 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "POST" && url.pathname === "/api/refresh") {
       const siteId = url.searchParams.get("site") || "all";
-      await runScrape(siteId, { waitForLoginConfirm });
-      const payload = readJsonIfExists(resolveFromRoot("data/latest.json")) ?? { sites: [], groups: [] };
-      sendJson(res, 200, { ok: true, siteId, data: attachPrevMultiplier(normalizeLatest(payload)) });
+      const scrape = await runScrape(siteId, { waitForLoginConfirm });
+      const payload = scrape.result ?? readJsonIfExists(resolveFromRoot("data/latest.json")) ?? { sites: [], groups: [] };
+      const errors = scrape.errors || [];
+      const ok = siteId === "all" ? true : !scrape.hadError;
+      sendJson(res, 200, {
+        ok,
+        hadError: scrape.hadError,
+        siteId,
+        error: errors[0]?.error,
+        errors,
+        data: attachPrevMultiplier(normalizeLatest(payload))
+      });
       return;
     }
 
