@@ -100,9 +100,18 @@ function authHeaders(session, siteConfig) {
     };
   }
 
+  // 新版 newapi 使用 JWT access token；旧版仍用 session cookie + New-Api-User
+  if (isUsableToken(session.token)) {
+    return {
+      Authorization: `Bearer ${session.token}`,
+      ...(isUsableUserId(session.userId) ? { "New-Api-User": String(session.userId) } : {}),
+      ...(isUsableCookie(session.cookie) ? { Cookie: session.cookie } : {})
+    };
+  }
+
   return {
-    "New-Api-User": String(session.userId),
-    Cookie: session.cookie
+    ...(isUsableUserId(session.userId) ? { "New-Api-User": String(session.userId) } : {}),
+    ...(isUsableCookie(session.cookie) ? { Cookie: session.cookie } : {})
   };
 }
 
@@ -115,6 +124,60 @@ function buildCookieHeaderFromSetCookie(setCookieHeaders) {
     .map((header) => header.split(";")[0])
     .filter(Boolean)
     .join("; ");
+}
+
+function mergeCookieHeaders(...headers) {
+  const jar = new Map();
+  for (const header of headers) {
+    if (!isUsableCookie(header)) continue;
+    for (const part of header.split(";")) {
+      const trimmed = part.trim();
+      if (!trimmed || !trimmed.includes("=")) continue;
+      const eq = trimmed.indexOf("=");
+      const name = trimmed.slice(0, eq).trim();
+      const value = trimmed.slice(eq + 1).trim();
+      if (!name) continue;
+      jar.set(name, value);
+    }
+  }
+  return [...jar.entries()].map(([name, value]) => `${name}=${value}`).join("; ");
+}
+
+function cookiesForBaseUrl(cookies, baseUrl) {
+  let hostname = "";
+  try {
+    hostname = new URL(baseUrl).hostname;
+  } catch {
+    return cookies;
+  }
+  return cookies.filter((cookie) => {
+    const domain = String(cookie.domain || "").replace(/^\./, "");
+    if (!domain) return true;
+    return hostname === domain || hostname.endsWith(`.${domain}`);
+  });
+}
+
+function hasNewApiAuthCookie(cookie) {
+  return /(?:^|;\s*)(session|new_api_refresh)=/i.test(cookie || "");
+}
+
+function userIdFromAccessToken(token) {
+  if (!isUsableToken(token)) return null;
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) return null;
+    const payload = JSON.parse(Buffer.from(payloadPart, "base64url").toString("utf8"));
+    const candidate = payload.sub ?? payload.user_id ?? payload.userId ?? payload.id ?? payload.uid;
+    return isUsableUserId(candidate) ? String(candidate) : null;
+  } catch {
+    return null;
+  }
+}
+
+function isUsableNewApiSession(session) {
+  if (!session) return false;
+  if (isUsableToken(session.token)) return true;
+  return hasNewApiAuthCookie(session.cookie) && isUsableUserId(session.userId);
 }
 
 function getChromeAppPath() {
@@ -135,45 +198,208 @@ async function getChromium(siteName) {
   }
 }
 
-async function extractSessionFromContext(context, page, baseUrl, siteConfig) {
-  await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30_000 }).catch(() => null);
+async function readStorageSession(page, siteConfig) {
+  return await page.evaluate((framework) => {
+    const storageKeys = framework === "sub2api"
+      ? ["auth_token", "token", "access_token"]
+      : ["uid", "userId", "user_id", "id", "user", "userInfo"];
 
-  if (frameworkFor(siteConfig) === "sub2api") {
-    const token = await page.evaluate(() => {
-      const candidateKeys = ["auth_token", "token", "access_token"];
-      for (const key of candidateKeys) {
-        const value = window.localStorage.getItem(key);
-        if (value) return value;
+    const readValue = (store) => {
+      for (const key of storageKeys) {
+        const raw = store.getItem(key);
+        if (!raw) continue;
+        if (framework === "sub2api") return raw;
+        if (Number(raw) > 0) return String(raw);
+        try {
+          const parsed = JSON.parse(raw);
+          const candidate = parsed?.id ?? parsed?.user_id ?? parsed?.userId ?? parsed?.uid;
+          if (candidate != null && Number(candidate) > 0) return String(candidate);
+        } catch {}
       }
       return null;
-    });
-    const cookie = buildCookieHeader(await context.cookies(baseUrl));
-    if (!isUsableToken(token) && !isUsableCookie(cookie)) return null;
-    return { token, cookie };
-  }
+    };
 
-  const userId = await page.evaluate(() => {
-    const candidateKeys = ["uid", "userId", "user_id", "id"];
-    for (const key of candidateKeys) {
-      const value = window.localStorage.getItem(key);
-      if (value && Number(value) > 0) return value;
-    }
-    return null;
-  });
-
-  const cookies = await context.cookies(baseUrl);
-  const cookie = buildCookieHeader(cookies);
-  if (!isUsableCookie(cookie) || !isUsableUserId(userId)) return null;
-
-  return { cookie, userId };
+    return {
+      local: readValue(window.localStorage),
+      session: readValue(window.sessionStorage)
+    };
+  }, frameworkFor(siteConfig));
 }
 
-async function extractSessionFromCdp(browser, baseUrl, siteConfig) {
+async function refreshNewApiSession(baseUrl, session, siteConfig, siteName, page = null) {
+  const cookie = session?.cookie;
+  if (!hasNewApiAuthCookie(cookie) && !isUsableToken(session?.token)) return null;
+
+  // 优先走页面内 fetch，确保 path 限定的 refresh cookie 与 Cloudflare 态都能带上
+  if (page) {
+    try {
+      const result = await page.evaluate(async () => {
+        const res = await fetch("/api/user/auth/refresh", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: "{}"
+        });
+        const text = await res.text();
+        let body = null;
+        try {
+          body = JSON.parse(text);
+        } catch {}
+        return { ok: res.ok, status: res.status, body, text: text.slice(0, 200) };
+      });
+      if (result.ok) {
+        const token =
+          result.body?.data?.access_token ??
+          result.body?.data?.token ??
+          result.body?.access_token ??
+          result.body?.token;
+        const userId =
+          result.body?.data?.id ??
+          result.body?.data?.user?.id ??
+          result.body?.data?.user_id ??
+          userIdFromAccessToken(token) ??
+          (isUsableUserId(session?.userId) ? String(session.userId) : null);
+        if (isUsableToken(token)) {
+          return {
+            token,
+            cookie,
+            userId: isUsableUserId(userId) ? String(userId) : undefined
+          };
+        }
+      }
+    } catch {
+      // fall through to node fetch
+    }
+  }
+
+  try {
+    const res = await fetch(apiUrl(baseUrl, siteConfig, "/api/user/auth/refresh"), {
+      method: "POST",
+      headers: {
+        ...(isUsableCookie(cookie) ? { Cookie: cookie } : {}),
+        "Content-Type": "application/json",
+        Origin: baseUrl,
+        Referer: `${baseUrl}/`
+      },
+      body: "{}"
+    });
+    const text = await res.text();
+    let body;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      return null;
+    }
+    if (!res.ok) return null;
+    const token = body?.data?.access_token ?? body?.data?.token ?? body?.access_token ?? body?.token;
+    const setCookie = buildCookieHeaderFromSetCookie(res.headers.getSetCookie?.() ?? []);
+    const mergedCookie = mergeCookieHeaders(cookie, setCookie);
+    const userId =
+      body?.data?.id ??
+      body?.data?.user?.id ??
+      body?.data?.user_id ??
+      userIdFromAccessToken(token) ??
+      (isUsableUserId(session?.userId) ? String(session.userId) : null);
+    if (!isUsableToken(token) && !hasNewApiAuthCookie(mergedCookie)) return null;
+    return {
+      token: isUsableToken(token) ? token : undefined,
+      cookie: isUsableCookie(mergedCookie) ? mergedCookie : undefined,
+      userId: isUsableUserId(userId) ? String(userId) : undefined
+    };
+  } catch (error) {
+    console.log(`${siteName} access token 刷新失败: ${error.message.split("\n")[0]}`);
+    return null;
+  }
+}
+
+async function resolveUserIdFromCookie(baseUrl, cookie, siteConfig, siteName) {
+  if (!isUsableCookie(cookie)) return null;
+  try {
+    const body = await fetchJson(
+      apiUrl(baseUrl, siteConfig, "/api/user/self"),
+      {
+        headers: {
+          Cookie: cookie,
+          // 部分 newapi 部署在缺少 New-Api-User 时仍可用 cookie 返回用户信息
+          "New-Api-User": "0"
+        }
+      },
+      siteName
+    );
+    const userId = body?.data?.id ?? body?.data?.user_id ?? body?.data?.userId;
+    return isUsableUserId(userId) ? String(userId) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function extractSessionFromContext(context, page, baseUrl, siteConfig, siteName = "site") {
+  const candidateUrls = [
+    `${baseUrl}/`,
+    `${baseUrl}/dashboard/overview`,
+    `${baseUrl}/console`,
+    `${baseUrl}/keys`,
+    `${baseUrl}/personal`,
+    loginUrlFor(baseUrl, siteConfig)
+  ];
+
+  for (const url of candidateUrls) {
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 }).catch(() => null);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // new_api_refresh 等 cookie 可能带 path 限制，不能只用首页 URL 过滤
+    const siteCookies = cookiesForBaseUrl(await context.cookies(), baseUrl);
+    const cookie = buildCookieHeader(siteCookies);
+
+    if (frameworkFor(siteConfig) === "sub2api") {
+      const stored = await readStorageSession(page, siteConfig);
+      const token = stored.local || stored.session;
+      if (isUsableToken(token) || isUsableCookie(cookie)) {
+        return {
+          token: isUsableToken(token) ? token : undefined,
+          cookie: isUsableCookie(cookie) ? cookie : undefined
+        };
+      }
+      continue;
+    }
+
+    if (hasNewApiAuthCookie(cookie)) {
+      const refreshed = await refreshNewApiSession(baseUrl, { cookie }, siteConfig, siteName, page);
+      if (isUsableNewApiSession(refreshed)) return refreshed;
+
+      // 即使 refresh 暂时失败（如 429），也先把 refresh cookie 存下来
+      const stored = await readStorageSession(page, siteConfig);
+      let userId = stored.local || stored.session;
+      if (!isUsableUserId(userId)) {
+        userId = await resolveUserIdFromCookie(baseUrl, cookie, siteConfig, siteName);
+      }
+      if (hasNewApiAuthCookie(cookie)) {
+        return {
+          cookie,
+          userId: isUsableUserId(userId) ? String(userId) : undefined
+        };
+      }
+    }
+
+    const stored = await readStorageSession(page, siteConfig);
+    let userId = stored.local || stored.session;
+    if (!isUsableUserId(userId) && isUsableCookie(cookie)) {
+      userId = await resolveUserIdFromCookie(baseUrl, cookie, siteConfig, siteName);
+    }
+    if (isUsableCookie(cookie) && isUsableUserId(userId) && hasNewApiAuthCookie(cookie)) {
+      return { cookie, userId: String(userId) };
+    }
+  }
+
+  return null;
+}
+
+async function extractSessionFromCdp(browser, baseUrl, siteConfig, siteName) {
   const context = browser.contexts()[0] ?? (await browser.newContext());
   const pages = context.pages();
-  const page = pages.find((candidate) => candidate.url().startsWith(baseUrl)) ?? pages[0];
+  const page = pages.find((candidate) => candidate.url().startsWith(baseUrl)) ?? pages[0] ?? (await context.newPage());
   if (!page) return null;
-  return await extractSessionFromContext(context, page, baseUrl, siteConfig);
+  return await extractSessionFromContext(context, page, baseUrl, siteConfig, siteName);
 }
 
 function getProfilePath(siteId, siteConfig) {
@@ -212,8 +438,13 @@ async function promptForBrowserLogin(siteId, siteName, baseUrl, siteConfig, opti
   const profilePath = getProfilePath(siteId, siteConfig);
   fs.mkdirSync(profilePath, { recursive: true });
 
-  const session = await promptForSystemChromeLogin(siteId, siteName, baseUrl, siteConfig, profilePath, options);
-  if (session) return session;
+  const chromeResult = await promptForSystemChromeLogin(siteId, siteName, baseUrl, siteConfig, profilePath, options);
+  if (chromeResult.session) return chromeResult.session;
+  // 系统 Chrome 已经完成一次确认，但没读到登录态时，不要再卡第二次确认
+  if (chromeResult.attempted) {
+    console.log(`${siteName} 已完成浏览器确认，但未读到可用登录态，不再重复等待。`);
+    return null;
+  }
 
   console.log(`将打开 ${siteName} 浏览器窗口，请手动登录并通过验证。`);
   if (waitForConfirm) {
@@ -235,7 +466,7 @@ async function promptForBrowserLogin(siteId, siteName, baseUrl, siteConfig, opti
     }
 
     await waitForLoginStep(siteId, siteName, waitForConfirm);
-    return await extractSessionFromContext(context, page, baseUrl, siteConfig);
+    return await extractSessionFromContext(context, page, baseUrl, siteConfig, siteName);
   } finally {
     await context.close();
   }
@@ -247,10 +478,22 @@ function loginUrlFor(baseUrl, siteConfig) {
   return hasUsableCredentials(siteConfig) ? `${baseUrl}${loginPath}` : `${baseUrl}/keys`;
 }
 
+async function waitForCdp(port, timeoutMs = 15_000) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/json/version`);
+      if (res.ok) return true;
+    } catch {}
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+  return false;
+}
+
 async function promptForSystemChromeLogin(siteId, siteName, baseUrl, siteConfig, profilePath, options = {}) {
   const waitForConfirm = options.waitForLoginConfirm;
   const chromePath = getChromeAppPath();
-  if (!chromePath) return null;
+  if (!chromePath) return { attempted: false, session: null };
 
   const port = siteConfig.remoteDebuggingPort ?? DEFAULT_REMOTE_DEBUGGING_PORT;
   console.log(`将使用系统 Chrome 打开 ${siteName}，以便通过 Cloudflare/Turnstile 验证。`);
@@ -273,19 +516,34 @@ async function promptForSystemChromeLogin(siteId, siteName, baseUrl, siteConfig,
   );
   chrome.unref();
 
-  await waitForLoginStep(siteId, siteName, waitForConfirm);
-
-  const chromium = await getChromium(siteName);
-  let browser;
   try {
-    browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
-    return await extractSessionFromCdp(browser, baseUrl, siteConfig);
+    await waitForLoginStep(siteId, siteName, waitForConfirm);
+
+    const cdpReady = await waitForCdp(port);
+    if (!cdpReady) {
+      console.log(`无法连接系统 Chrome 调试端口 ${port}，请确认浏览器仍在运行。`);
+      return { attempted: true, session: null };
+    }
+
+    const chromium = await getChromium(siteName);
+    let browser;
+    try {
+      browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
+      const session = await extractSessionFromCdp(browser, baseUrl, siteConfig, siteName);
+      if (!session) {
+        console.log(`${siteName} 浏览器已确认，但未读到 cookie/userId。请确认已登录成功后再点确认。`);
+      }
+      return { attempted: true, session };
+    } catch (error) {
+      console.log(`无法从系统 Chrome 读取登录态: ${error.message.split("\n")[0]}`);
+      return { attempted: true, session: null };
+    } finally {
+      // 只断开 CDP 连接；不要 kill 用户刚登录的 Chrome 窗口
+      await browser?.close().catch(() => null);
+    }
   } catch (error) {
-    console.log(`无法从系统 Chrome 读取登录态: ${error.message.split("\n")[0]}`);
-    return null;
-  } finally {
-    await browser?.close().catch(() => null);
-    try { process.kill(-chrome.pid); } catch {}
+    console.log(`${siteName} 系统 Chrome 登录流程异常: ${error.message.split("\n")[0]}`);
+    return { attempted: true, session: null };
   }
 }
 
@@ -369,29 +627,76 @@ async function fetchJson(url, options, siteName) {
   return body;
 }
 
+function isAuthFailure(error) {
+  return /HTTP 401|HTTP 403/.test(error?.message || "");
+}
+
+async function ensureFreshSession(baseUrl, session, siteConfig, siteName) {
+  if (!session) return null;
+  if (frameworkFor(siteConfig) === "sub2api") return session;
+  if (isUsableToken(session.token) && isUsableNewApiSession(session)) return session;
+  if (!hasNewApiAuthCookie(session.cookie) && !isUsableToken(session.token)) return session;
+  const refreshed = await refreshNewApiSession(baseUrl, session, siteConfig, siteName);
+  return refreshed || session;
+}
+
 async function fetchGroups(baseUrl, session, siteConfig, siteName) {
-  if (frameworkFor(siteConfig) === "sub2api") {
-    const headers = authHeaders(session, siteConfig);
-    try {
+  try {
+    if (frameworkFor(siteConfig) === "sub2api") {
+      const headers = authHeaders(session, siteConfig);
       const [availableBody, ratesBody] = await Promise.all([
         fetchJson(apiUrl(baseUrl, siteConfig, "/groups/available"), { headers }, siteName),
         fetchJson(apiUrl(baseUrl, siteConfig, "/groups/rates"), { headers }, siteName)
       ]);
       return normalizeSub2ApiGroups(availableBody, ratesBody);
-    } catch (error) {
-      if (/HTTP 401|HTTP 403/.test(error.message)) return null;
-      throw error;
     }
+
+    let active = session;
+    // 新版 JWT 站点：没有 access token 时先用 refresh cookie 换一次
+    if (!isUsableToken(active?.token) && hasNewApiAuthCookie(active?.cookie)) {
+      active = (await refreshNewApiSession(baseUrl, active, siteConfig, siteName)) || active;
+    }
+
+    const body = await fetchJson(
+      apiUrl(baseUrl, siteConfig, "/api/user/self/groups?include_usage=1"),
+      { headers: authHeaders(active, siteConfig) },
+      siteName
+    );
+
+    // 兼容 success 字段缺失但 data 有效的返回
+    if (body?.success === false) return null;
+    if (body?.data == null) return null;
+    // 把刷新后的 token 回写，方便调用方保存
+    if (active !== session && active) Object.assign(session, active);
+    return body.data;
+  } catch (error) {
+    // access token 过期时尝试 refresh 一次
+    if (
+      frameworkFor(siteConfig) === "newapi" &&
+      isAuthFailure(error) &&
+      hasNewApiAuthCookie(session?.cookie)
+    ) {
+      const refreshed = await refreshNewApiSession(baseUrl, session, siteConfig, siteName);
+      if (refreshed && isUsableToken(refreshed.token)) {
+        Object.assign(session, refreshed);
+        try {
+          const body = await fetchJson(
+            apiUrl(baseUrl, siteConfig, "/api/user/self/groups?include_usage=1"),
+            { headers: authHeaders(session, siteConfig) },
+            siteName
+          );
+          if (body?.success === false || body?.data == null) return null;
+          return body.data;
+        } catch (retryError) {
+          if (isAuthFailure(retryError)) return null;
+          throw retryError;
+        }
+      }
+    }
+    // 登录态失效时返回 null，让 scrape 流程继续走重新登录 / 浏览器验证
+    if (isAuthFailure(error)) return null;
+    throw error;
   }
-
-  const body = await fetchJson(
-    apiUrl(baseUrl, siteConfig, "/api/user/self/groups?include_usage=1"),
-    { headers: authHeaders(session, siteConfig) },
-    siteName
-  );
-
-  if (!body.success) return null;
-  return body.data;
 }
 
 async function fetchBalance(baseUrl, session, siteConfig, siteName) {
@@ -478,11 +783,36 @@ async function loginWithPassword(baseUrl, siteConfig, siteName) {
     return { token, cookie };
   }
 
-  const loginUserId = body.data?.id;
   const cookies = loginRes.headers.getSetCookie?.() ?? [];
   const loginCookie = buildCookieHeaderFromSetCookie(cookies);
+  const token = body.data?.access_token ?? body.data?.token ?? body.access_token ?? body.token;
+  const loginUserId =
+    body.data?.id ??
+    body.data?.user?.id ??
+    body.data?.user_id ??
+    userIdFromAccessToken(token);
+
+  // 新版 JWT：有 access token 即可；旧版仍要求 cookie + userId
+  if (isUsableToken(token)) {
+    return {
+      token,
+      cookie: isUsableCookie(loginCookie) ? loginCookie : undefined,
+      userId: isUsableUserId(loginUserId) ? String(loginUserId) : undefined
+    };
+  }
+
+  if (hasNewApiAuthCookie(loginCookie)) {
+    const refreshed = await refreshNewApiSession(
+      baseUrl,
+      { cookie: loginCookie, userId: loginUserId },
+      siteConfig,
+      siteName
+    );
+    if (isUsableNewApiSession(refreshed)) return refreshed;
+  }
+
   if (!isUsableCookie(loginCookie) || !isUsableUserId(loginUserId)) {
-    console.log(`${siteName} 账号密码登录成功，但没有拿到可用的 cookie 或用户 ID`);
+    console.log(`${siteName} 账号密码登录成功，但没有拿到可用的 cookie/token 或用户 ID`);
     return null;
   }
 
@@ -551,10 +881,12 @@ export async function scrapeNewApi(siteConfig, options = {}) {
   const saved = loadSavedSession(siteId);
   if (saved) {
     console.log(`尝试复用 ${siteName} session...`);
-    const data = await fetchGroups(baseUrl, saved, siteConfig, siteName);
+    const reusable = (await ensureFreshSession(baseUrl, saved, siteConfig, siteName)) || saved;
+    const data = await fetchGroups(baseUrl, reusable, siteConfig, siteName);
     if (data) {
       console.log(`${siteName} session 有效`);
-      const balance = await fetchBalance(baseUrl, saved, siteConfig, siteName);
+      saveSession(siteId, reusable);
+      const balance = await fetchBalance(baseUrl, reusable, siteConfig, siteName);
       return buildResult(siteConfig, siteId, siteName, baseUrl, data, balance);
     }
     console.log(`${siteName} session 已过期，尝试其他登录态...`);
@@ -563,7 +895,13 @@ export async function scrapeNewApi(siteConfig, options = {}) {
   let activeSession = null;
   if (frameworkFor(siteConfig) === "sub2api" && isUsableToken(siteConfig.token)) {
     activeSession = { token: siteConfig.token, cookie: isUsableCookie(cookie) ? cookie : undefined };
-  } else if (isUsableCookie(cookie) && isUsableUserId(userId)) {
+  } else if (frameworkFor(siteConfig) === "newapi" && isUsableToken(siteConfig.token)) {
+    activeSession = {
+      token: siteConfig.token,
+      cookie: isUsableCookie(cookie) ? cookie : undefined,
+      userId: isUsableUserId(userId) ? userId : userIdFromAccessToken(siteConfig.token)
+    };
+  } else if (isUsableCookie(cookie) && (isUsableUserId(userId) || hasNewApiAuthCookie(cookie))) {
     activeSession = { cookie, userId };
   } else {
     if (hasUsableCredentials(siteConfig)) {
@@ -589,7 +927,7 @@ export async function scrapeNewApi(siteConfig, options = {}) {
     const loginHint =
       frameworkFor(siteConfig) === "sub2api"
         ? `请先用 ${defaultProfileDirForSite(siteId)} 登录一次，或在 config.json 中填写 token。`
-        : `请先用 ${defaultProfileDirForSite(siteId)} 登录一次，或在 config.json 中填写 cookie 和 userId。`;
+        : `请先用 ${defaultProfileDirForSite(siteId)} 登录一次，或在 config.json 中填写 cookie/token 和 userId。`;
     throw new Error(
       `无法获取 ${siteName} 登录态。\n` +
         "如果账号密码自动登录失败，通常是站点要求 Turnstile/Cloudflare 验证。\n" +
@@ -597,9 +935,10 @@ export async function scrapeNewApi(siteConfig, options = {}) {
     );
   }
 
+  activeSession = (await ensureFreshSession(baseUrl, activeSession, siteConfig, siteName)) || activeSession;
   const data = await fetchGroups(baseUrl, activeSession, siteConfig, siteName);
   if (!data) {
-    throw new Error(`${siteName} Cookie 无效或已过期，请重新登录。`);
+    throw new Error(`${siteName} 登录态无效或已过期，请重新登录。`);
   }
 
   const balance = await fetchBalance(baseUrl, activeSession, siteConfig, siteName);

@@ -600,6 +600,30 @@
     .login-confirm button {
       width: 100%;
     }
+    .page-login-confirm {
+      display: none;
+      margin: 0 0 12px;
+      padding: 12px 14px;
+      border: 1px solid color-mix(in srgb, var(--amber) 35%, var(--line));
+      border-radius: 8px;
+      background: var(--pill-amber);
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .page-login-confirm.show {
+      display: flex;
+    }
+    .page-login-confirm-text {
+      flex: 1 1 auto;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .page-login-confirm button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
     .site-list {
       display: flex;
       flex-direction: column;
@@ -698,6 +722,10 @@
       <div class="summary" id="summary"></div>
     </div>
     <div class="status" id="status" role="status" aria-live="polite"></div>
+    <div class="page-login-confirm" id="pageLoginConfirm">
+      <div class="page-login-confirm-text" id="pageLoginConfirmText"></div>
+      <button class="primary" id="pageLoginConfirmBtn">我已完成登录</button>
+    </div>
     <div class="channel-bar" id="channelBar"></div>
     <div id="content"></div>
   </main>
@@ -830,6 +858,7 @@
       setBusy(true, siteId);
       updateProgress();
       const progressTimer = setInterval(updateProgress, 1000);
+      startLoginPoll("page");
       try {
         const refreshedPayload = await requestRefresh(siteId);
         setStatus(buildRefreshDoneMessage(siteId, refreshedPayload, Date.now() - startedAt), "success");
@@ -839,6 +868,7 @@
         return;
       } finally {
         clearInterval(progressTimer);
+        stopLoginPoll();
         setBusy(false);
       }
     }
@@ -853,6 +883,7 @@
       const startedAt = Date.now();
       const failures = [];
       refreshAllState = { current: 0, done: 0, total: siteIds.length };
+      startLoginPoll("page");
 
       for (let i = 0; i < siteIds.length; i++) {
         const currentSiteId = siteIds[i];
@@ -890,6 +921,7 @@
       const elapsed = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
       const total = siteIds.length;
       refreshAllState = null;
+      stopLoginPoll();
       setBusy(false);
       if (failures.length) {
         setStatus("刷新完成：成功 " + (total - failures.length) + "/" + total + "，失败 " + failures.length + " 个，用时 " + elapsed + " 秒", "error");
@@ -1287,7 +1319,8 @@
     }
     function closeModal() {
       modal.overlay.classList.remove("open");
-      hideLoginConfirm();
+      if (loginPollTarget === "modal") stopLoginPoll();
+      else modal.loginConfirm.style.display = "none";
       modal.save.disabled = false;
       modal.save.textContent = "保存并验证";
       clearFormError();
@@ -1397,39 +1430,63 @@
     });
 
     let loginPollTimer = null;
+    let loginPollTarget = null;
+    const pageLoginConfirm = document.getElementById("pageLoginConfirm");
+    const pageLoginConfirmText = document.getElementById("pageLoginConfirmText");
+    const pageLoginConfirmBtn = document.getElementById("pageLoginConfirmBtn");
 
-    function showLoginConfirm(siteName) {
-      modal.loginConfirmText.textContent = `请在弹出的浏览器中完成「${siteName}」的登录验证，完成后点击下方按钮。`;
-      modal.loginConfirm.style.display = "block";
+    function showLoginConfirm(siteName, target = loginPollTarget || "modal") {
+      const text = `请在弹出的浏览器中完成「${siteName}」的登录验证，完成后点击下方按钮。`;
+      if (target === "page") {
+        pageLoginConfirmText.textContent = text;
+        pageLoginConfirm.classList.add("show");
+        modal.loginConfirm.style.display = "none";
+      } else {
+        modal.loginConfirmText.textContent = text;
+        modal.loginConfirm.style.display = "block";
+        pageLoginConfirm.classList.remove("show");
+      }
     }
     function hideLoginConfirm() {
       modal.loginConfirm.style.display = "none";
-      if (loginPollTimer) { clearInterval(loginPollTimer); loginPollTimer = null; }
+      pageLoginConfirm.classList.remove("show");
+    }
+    function stopLoginPoll() {
+      if (loginPollTimer) {
+        clearInterval(loginPollTimer);
+        loginPollTimer = null;
+      }
+      loginPollTarget = null;
+      hideLoginConfirm();
     }
 
-    function startLoginPoll() {
-      hideLoginConfirm();
+    function startLoginPoll(target = "modal") {
+      stopLoginPoll();
+      loginPollTarget = target;
       loginPollTimer = setInterval(async () => {
         try {
           const res = await fetch("/api/login/pending", { cache: "no-store" });
           const body = await res.json();
           if (body.pending) {
-            showLoginConfirm(body.siteName || body.siteId);
+            showLoginConfirm(body.siteName || body.siteId, target);
           } else {
             hideLoginConfirm();
           }
         } catch {}
-      }, 2000);
+      }, 1000);
     }
 
-    modal.loginConfirmBtn.addEventListener("click", async () => {
-      modal.loginConfirmBtn.disabled = true;
+    async function confirmLogin(button) {
+      if (button) button.disabled = true;
       try {
         await fetch("/api/login/confirm", { method: "POST" });
       } catch {}
-      modal.loginConfirmBtn.disabled = false;
+      if (button) button.disabled = false;
       hideLoginConfirm();
-    });
+    }
+
+    modal.loginConfirmBtn.addEventListener("click", () => confirmLogin(modal.loginConfirmBtn));
+    pageLoginConfirmBtn.addEventListener("click", () => confirmLogin(pageLoginConfirmBtn));
 
     modal.save.addEventListener("click", async () => {
       clearFormError();
@@ -1479,7 +1536,7 @@
       } catch (error) {
         showFormError(error.message || String(error));
       } finally {
-        hideLoginConfirm();
+        stopLoginPoll();
         modal.save.disabled = false;
         modal.save.textContent = originalText;
       }
