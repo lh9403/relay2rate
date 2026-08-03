@@ -10,25 +10,39 @@ const port = Number(process.env.PORT || 4173);
 
 const SENSITIVE_FIELDS = ["password", "token", "cookie"];
 
-let pendingLogin = null;
+let pendingLogins = new Map();
 
-function waitForLoginConfirm(siteId, siteName) {
+function waitForLoginConfirm(siteId, siteName, previousToken) {
+  for (const [token, pending] of pendingLogins) {
+    if (pending.siteId === siteId && token !== previousToken) {
+      pendingLogins.delete(token);
+      pending.resolve();
+    }
+  }
   return new Promise((resolve, reject) => {
-    pendingLogin = { siteId, siteName, resolve, reject };
+    const token = `${siteId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+    pendingLogins.set(token, { siteId, siteName, resolve, reject, createdAt: Date.now() });
   });
 }
 
-function resolvePendingLogin() {
-  if (pendingLogin) {
-    pendingLogin.resolve();
-    pendingLogin = null;
+function resolvePendingLogin(siteId) {
+  let resolved = false;
+  for (const [token, pending] of pendingLogins) {
+    if (!siteId || pending.siteId === siteId) {
+      pending.resolve();
+      pendingLogins.delete(token);
+      resolved = true;
+    }
   }
+  return resolved;
 }
 
-function rejectPendingLogin(error) {
-  if (pendingLogin) {
-    pendingLogin.reject(error);
-    pendingLogin = null;
+function rejectPendingLogin(error, siteId) {
+  for (const [token, pending] of pendingLogins) {
+    if (!siteId || pending.siteId === siteId) {
+      pending.reject(error);
+      pendingLogins.delete(token);
+    }
   }
 }
 
@@ -229,20 +243,25 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && url.pathname === "/api/login/pending") {
-      if (pendingLogin) {
-        sendJson(res, 200, { pending: true, siteId: pendingLogin.siteId, siteName: pendingLogin.siteName });
-      } else {
-        sendJson(res, 200, { pending: false });
+      const pendings = [];
+      for (const [, pending] of pendingLogins) {
+        pendings.push({ siteId: pending.siteId, siteName: pending.siteName });
       }
+      sendJson(res, 200, {
+        pending: pendings.length > 0,
+        pendings,
+        siteId: pendings[0]?.siteId,
+        siteName: pendings[0]?.siteName
+      });
       return;
     }
 
     if (req.method === "POST" && url.pathname === "/api/login/confirm") {
-      if (!pendingLogin) {
+      const siteId = url.searchParams.get("site");
+      if (!resolvePendingLogin(siteId)) {
         sendJson(res, 200, { ok: false, error: "当前没有等待登录确认的站点" });
         return;
       }
-      resolvePendingLogin();
       sendJson(res, 200, { ok: true });
       return;
     }

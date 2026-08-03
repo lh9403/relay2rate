@@ -7,707 +7,440 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #f5f7fb;
+      --bg: #eceff5;
+      --bg-grad-a: #e8ecf6;
+      --bg-grad-b: #f4f6fa;
       --panel: #ffffff;
-      --text: #18202b;
-      --muted: #657184;
-      --line: #d9e0ea;
-      --soft: #eef3f8;
-      --th-bg: #eef3f8;
-      --th-text: #354154;
+      --panel-2: #f8fafc;
+      --text: #171c26;
+      --muted: #69758a;
+      --line: #e2e7f0;
+      --line-strong: #ccd4e2;
+      --shadow: 0 1px 3px rgba(23, 28, 38, .06), 0 10px 24px -12px rgba(23, 28, 38, .10);
+      --shadow-hover: 0 2px 6px rgba(23, 28, 38, .08), 0 16px 40px -14px rgba(23, 28, 38, .16);
+      --accent: #4f46e5;
+      --accent-strong: #4338ca;
+      --accent-soft: rgba(79, 70, 229, .10);
+      --accent-ring: rgba(79, 70, 229, .22);
+      --green: #0f8a5f;
+      --green-bg: #e6f6ef;
+      --red: #d33b31;
+      --red-bg: #fdecea;
+      --amber: #a16107;
+      --amber-bg: #fdf3dd;
+      --blue: #1769b4;
+      --blue-bg: #e7f1fb;
       --input-bg: #ffffff;
-      --pill-green: #e8f5ee;
-      --pill-red: #fff0ed;
-      --pill-amber: #fff5df;
-      --pill-blue: #e8f1fb;
-      --green: #087f5b;
-      --blue: #155b9f;
-      --red: #b42318;
-      --amber: #a15c07;
-      --primary-bg: #155b9f;
-      --primary-text: #ffffff;
-      --primary-soft: #e8f1fb;
-      --primary-ring: rgba(21, 91, 159, 0.22);
+      --radius: 14px;
+      --radius-sm: 9px;
     }
     :root[data-theme="dark"] {
       color-scheme: dark;
-      --bg: #0f1419;
-      --panel: #1a2028;
-      --text: #e6edf3;
-      --muted: #8b97a7;
-      --line: #2a3340;
-      --soft: #232b35;
-      --th-bg: #232b35;
-      --th-text: #b8c2cf;
-      --input-bg: #1a2028;
-      --pill-green: rgba(8, 127, 91, 0.22);
-      --pill-red: rgba(180, 35, 24, 0.22);
-      --pill-amber: rgba(161, 92, 7, 0.22);
-      --pill-blue: rgba(21, 91, 159, 0.28);
-      --green: #4cc38a;
-      --blue: #6ba4e0;
-      --red: #ff6b5b;
-      --amber: #f0c050;
-      --primary-bg: #2b6cb0;
-      --primary-text: #ffffff;
-      --primary-soft: rgba(43, 108, 176, 0.22);
-      --primary-ring: rgba(107, 164, 224, 0.25);
+      --bg: #0c0f15;
+      --bg-grad-a: #0e1220;
+      --bg-grad-b: #0c0f15;
+      --panel: #161b25;
+      --panel-2: #1b2230;
+      --text: #e8edf5;
+      --muted: #8e99ac;
+      --line: #273041;
+      --line-strong: #354055;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px -8px rgba(0, 0, 0, .45);
+      --shadow-hover: 0 2px 5px rgba(0, 0, 0, .35), 0 14px 32px -10px rgba(0, 0, 0, .55);
+      --accent: #818cf8;
+      --accent-strong: #a5b0fc;
+      --accent-soft: rgba(129, 140, 248, .14);
+      --accent-ring: rgba(129, 140, 248, .3);
+      --green: #47c78f;
+      --green-bg: rgba(71, 199, 143, .14);
+      --red: #f27066;
+      --red-bg: rgba(242, 112, 102, .14);
+      --amber: #e8b34b;
+      --amber-bg: rgba(232, 179, 75, .13);
+      --blue: #6aaae6;
+      --blue-bg: rgba(106, 170, 230, .15);
+      --input-bg: #12161f;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
         color-scheme: dark;
-        --bg: #0f1419;
-        --panel: #1a2028;
-        --text: #e6edf3;
-        --muted: #8b97a7;
-        --line: #2a3340;
-        --soft: #232b35;
-        --th-bg: #232b35;
-        --th-text: #b8c2cf;
-        --input-bg: #1a2028;
-        --pill-green: rgba(8, 127, 91, 0.22);
-        --pill-red: rgba(180, 35, 24, 0.22);
-        --pill-amber: rgba(161, 92, 7, 0.22);
-        --pill-blue: rgba(21, 91, 159, 0.28);
-        --green: #4cc38a;
-        --blue: #6ba4e0;
-        --red: #ff6b5b;
-        --amber: #f0c050;
-        --primary-bg: #2b6cb0;
-        --primary-text: #ffffff;
-        --primary-soft: rgba(43, 108, 176, 0.22);
-        --primary-ring: rgba(107, 164, 224, 0.25);
+        --bg: #0c0f15;
+        --bg-grad-a: #0e1220;
+        --bg-grad-b: #0c0f15;
+        --panel: #161b25;
+        --panel-2: #1b2230;
+        --text: #e8edf5;
+        --muted: #8e99ac;
+        --line: #273041;
+        --line-strong: #354055;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px -8px rgba(0, 0, 0, .45);
+        --shadow-hover: 0 2px 5px rgba(0, 0, 0, .35), 0 14px 32px -10px rgba(0, 0, 0, .55);
+        --accent: #818cf8;
+        --accent-strong: #a5b0fc;
+        --accent-soft: rgba(129, 140, 248, .14);
+        --accent-ring: rgba(129, 140, 248, .3);
+        --green: #47c78f;
+        --green-bg: rgba(71, 199, 143, .14);
+        --red: #f27066;
+        --red-bg: rgba(242, 112, 102, .14);
+        --amber: #e8b34b;
+        --amber-bg: rgba(232, 179, 75, .13);
+        --blue: #6aaae6;
+        --blue-bg: rgba(106, 170, 230, .15);
+        --input-bg: #12161f;
       }
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, var(--bg-grad-a), var(--bg-grad-b) 240px) no-repeat, var(--bg);
       color: var(--text);
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
+
+    /* ── Header ─────────────────────────────── */
     header {
       flex-shrink: 0;
-      padding: 18px 24px 14px;
-      background: var(--panel);
+      padding: 14px 24px 12px;
+      background: color-mix(in srgb, var(--panel) 78%, transparent);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--line);
     }
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      max-width: 1440px;
-      margin: 0 auto;
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; max-width: 1560px; margin: 0 auto; }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .logo {
+      width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #06b6d4));
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 15px;
+      box-shadow: 0 4px 10px -3px var(--accent-ring);
     }
-    h1 {
-      margin: 0;
-      font-size: 22px;
-      line-height: 1.25;
-      letter-spacing: 0;
+    h1 { margin: 0; font-size: 19px; letter-spacing: .2px; }
+    .tag {
+      font-size: 11px; font-weight: 700; color: var(--accent);
+      background: var(--accent-soft); border-radius: 999px; padding: 2px 8px; white-space: nowrap;
     }
     .meta {
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 13px;
+      margin-top: 5px; color: var(--muted); font-size: 12.5px;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     }
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+    .meta .running {
+      color: var(--accent); font-weight: 650;
+      display: inline-flex; align-items: center; gap: 6px;
     }
+    .meta .running::before {
+      content: ""; width: 6px; height: 6px; border-radius: 999px;
+      background: var(--accent); animation: pulse 1.2s ease-in-out infinite;
+    }
+    .actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+    /* ── Controls ───────────────────────────── */
     button, select, input {
-      height: 36px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--input-bg);
-      color: var(--text);
-      font-size: 14px;
+      height: 34px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--input-bg); color: var(--text); font-size: 13.5px;
+      font-family: inherit; transition: border-color .14s, box-shadow .14s, background .14s, color .14s, transform .06s;
     }
-    button {
-      padding: 0 12px;
-      font-weight: 650;
-      cursor: pointer;
+    button { padding: 0 13px; font-weight: 650; cursor: pointer; white-space: nowrap; }
+    button:hover:not(:disabled) { border-color: var(--line-strong); background: var(--panel-2); }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring);
     }
-    button.primary {
-      background: var(--primary-bg);
-      border-color: var(--primary-bg);
-      color: var(--primary-text);
-    }
-    button:disabled {
-      cursor: wait;
-      opacity: 0.65;
-    }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    button.icon-btn { width: 34px; padding: 0; font-size: 15px; }
     button.is-loading {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      cursor: wait; opacity: 1;
     }
-    button.is-loading::before {
-      content: "";
-      width: 13px;
-      height: 13px;
-      border: 2px solid currentColor;
-      border-right-color: transparent;
-      border-radius: 999px;
-      animation: spin .75s linear infinite;
-      flex-shrink: 0;
+    button.is-loading::before, .spinner {
+      content: ""; width: 12px; height: 12px; flex-shrink: 0;
+      border: 2px solid currentColor; border-right-color: transparent;
+      border-radius: 999px; animation: spin .7s linear infinite;
     }
-    button.is-loading:disabled {
-      opacity: 1;
-    }
-    input, select {
-      padding: 0 10px;
-    }
+    input, select { padding: 0 10px; font-variant-numeric: tabular-nums; }
+    input::placeholder { color: var(--muted); }
+
     main {
-      flex: 1 1 auto;
-      min-height: 0;
-      max-width: 1440px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 16px 24px 28px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      flex: 1 1 auto; min-height: 0; max-width: 1560px; width: 100%;
+      margin: 0 auto; padding: 14px 24px 24px;
+      display: flex; flex-direction: column; overflow: hidden;
     }
+
+    /* ── Toolbar ────────────────────────────── */
     .toolbar {
-      display: grid;
-      grid-template-columns: minmax(200px, 1fr) minmax(150px, 210px) auto;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 10px;
-      flex-shrink: 0;
+      display: grid; grid-template-columns: minmax(200px, 1fr) auto auto; gap: 8px;
+      align-items: center; margin-bottom: 10px; flex-shrink: 0;
     }
-    .columns {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
+    .summary { justify-self: end; color: var(--muted); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    /* ── Login confirm bar ──────────────────── */
+    .login-bar { display: none; flex-direction: column; gap: 8px; margin: 0 0 10px; flex-shrink: 0; }
+    .login-bar.show { display: flex; }
+    .login-chip {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      border: 1px solid color-mix(in srgb, var(--amber) 40%, var(--line));
+      background: var(--amber-bg); color: var(--text);
+      animation: dropIn .18s ease;
     }
-    .column {
-      flex: 1 1 320px;
-      min-width: 280px;
-      max-width: 520px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      overflow: hidden;
-      position: relative;
-      transition: border-color .16s, box-shadow .16s, opacity .16s;
-    }
-    .column.is-refreshing {
-      border-color: var(--primary-bg);
-      box-shadow: 0 0 0 3px var(--primary-ring);
-    }
-    .column.is-refreshing::before {
-      content: "";
-      position: absolute;
-      inset: 0 0 auto;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, var(--primary-bg), transparent);
-      background-size: 180% 100%;
-      animation: refreshBar 1.05s linear infinite;
-      z-index: 1;
-    }
-    .column.is-refreshing .column-head {
-      background: var(--primary-soft);
-    }
-    #content.site-refreshing .column:not(.is-refreshing) {
-      opacity: .52;
-    }
-    .column-head {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      background: var(--soft);
-    }
-    .column-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .column-name {
-      font-size: 16px;
-      font-weight: 750;
-      overflow-wrap: anywhere;
-    }
-    .column-refresh {
-      margin-left: auto;
-      height: 28px;
-      padding: 0 10px;
-      font-size: 12px;
-      font-weight: 650;
-      flex-shrink: 0;
-    }
-    .column-refresh:disabled {
-      cursor: wait;
-    }
-    .column-refresh.is-loading {
-      min-width: 78px;
-      padding: 0 9px;
-    }
-    .column-sub {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 4px;
-      overflow-wrap: anywhere;
-    }
-    .column-stats {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 12px;
-      flex-wrap: wrap;
-    }
-    .balance {
-      color: var(--green);
-      font-weight: 700;
-    }
-    .balance.low {
-      color: var(--amber);
-    }
-    .balance.none {
-      color: var(--red);
-    }
-    .column-error {
-      color: var(--red);
-      font-size: 12px;
-      line-height: 1.45;
-      padding: 12px 16px;
-      overflow-wrap: anywhere;
-    }
-    .group-list {
-      display: flex;
-      flex-direction: column;
-    }
-    .group-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--line);
-    }
-    .group-item:last-child { border-bottom: 0; }
-    .group-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .group-name {
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
-    .desc {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 3px;
-      overflow-wrap: anywhere;
-    }
-    .group-side {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-    .group-conc {
-      color: var(--muted);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      min-height: 24px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 750;
-      background: var(--pill-green);
-      color: var(--green);
-      white-space: nowrap;
-    }
-    .pill.error {
-      background: var(--pill-red);
-      color: var(--red);
-    }
-    .pill.warn {
-      background: var(--pill-amber);
-      color: var(--amber);
-    }
-    .toolbar {
-      display: grid;
-      grid-template-columns: minmax(200px, 1fr) minmax(150px, 210px) auto;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .summary {
-      justify-self: end;
-      color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-    .multiplier {
-      display: inline-flex;
-      justify-content: center;
-      min-width: 58px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: var(--pill-green);
-      color: var(--green);
-      font-weight: 800;
-    }
-    .multiplier.best {
-      background: var(--pill-blue);
-      color: var(--blue);
-    }
-    .multiplier.warn {
-      background: var(--pill-amber);
-      color: var(--amber);
-    }
-    .mult-wrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .mult-delta {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 1px 5px;
-      border-radius: 4px;
-      white-space: nowrap;
-    }
-    .mult-delta.up {
-      background: var(--pill-red);
-      color: var(--red);
-    }
-    .mult-delta.down {
-      background: var(--pill-green);
-      color: var(--green);
-    }
-    .group-item.is-new {
-      border-left: 3px solid var(--green);
-    }
-    .mult-delta.new-group {
-      background: var(--pill-blue);
-      color: var(--blue);
-    }
-    .group-item.is-gone {
-      opacity: 0.55;
-      border-left: 3px solid var(--amber);
-    }
-    .group-item.is-gone .group-name {
-      text-decoration: line-through;
-    }
-    .mult-delta.gone {
-      background: var(--pill-amber);
-      color: var(--amber);
-    }
-    .status {
-      min-height: 20px;
-      margin: 0 0 10px;
-      color: var(--muted);
-      font-size: 13px;
-      flex-shrink: 0;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      transition: background .16s, border-color .16s, color .16s;
-    }
-    .status:not(:empty) {
-      min-height: 38px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: var(--panel);
-      border-color: var(--line);
-    }
-    .status.busy {
-      color: var(--blue);
-      background: var(--primary-soft);
-      border-color: var(--primary-bg);
-      font-weight: 650;
-    }
-    .status.busy::before {
-      content: "";
-      width: 14px;
-      height: 14px;
-      border: 2px solid currentColor;
-      border-right-color: transparent;
-      border-radius: 999px;
-      animation: spin .75s linear infinite;
-      flex-shrink: 0;
-    }
-    .status.success {
-      color: var(--green);
-      background: var(--pill-green);
-      border-color: var(--green);
-      font-weight: 650;
-    }
+    .login-chip-text { flex: 1; font-size: 13px; line-height: 1.5; }
+    .login-chip button { flex-shrink: 0; }
+
+    /* ── Channel chips ──────────────────────── */
     .channel-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 0 0 10px;
-      flex-shrink: 0;
+      display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 12px; flex-shrink: 0;
     }
     .channel-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: var(--panel);
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 650;
-      cursor: grab;
-      user-select: none;
+      display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px;
+      border: 1px solid var(--line); border-radius: 999px;
+      background: var(--panel); color: var(--muted);
+      font-size: 12.5px; font-weight: 650; cursor: grab; user-select: none;
       transition: color .12s, border-color .12s, background .12s, opacity .12s;
+      box-shadow: var(--shadow);
     }
+    .channel-chip:hover { border-color: var(--line-strong); }
     .channel-chip.dragging { opacity: .4; cursor: grabbing; }
-    .channel-chip input {
-      width: 14px;
-      height: 14px;
-      margin: 0;
-      accent-color: var(--primary-bg);
-      cursor: pointer;
-    }
+    .channel-chip .dot { width: 8px; height: 8px; border-radius: 999px; background: hsl(var(--h, 220) 70% 55%); flex-shrink: 0; }
+    .channel-chip input { width: 13px; height: 13px; margin: 0; accent-color: var(--accent); cursor: pointer; }
     .channel-chip.active {
-      color: var(--text);
-      border-color: var(--primary-bg);
-      background: var(--primary-bg);
+      color: var(--text); border-color: color-mix(in srgb, hsl(var(--h, 220) 70% 55%) 55%, var(--line));
+      background: color-mix(in srgb, hsl(var(--h, 220) 75% 55%) 12%, var(--panel));
     }
-    .channel-chip.active input {
-      accent-color: #fff;
+
+    /* ── Cards grid ─────────────────────────── */
+    #content { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 2px 2px 20px; scrollbar-width: thin; }
+    .columns {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 18px;
+      align-items: start;
     }
-    #content {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
+    .column {
+      background: var(--panel); border: 0; border-radius: 16px;
+      overflow: hidden; position: relative;
+      box-shadow: 0 1px 2px color-mix(in srgb, hsl(var(--h, 220) 45% 40%) 12%, transparent),
+                  0 10px 26px -14px color-mix(in srgb, hsl(var(--h, 220) 45% 40%) 28%, transparent);
+      transition: transform .16s, box-shadow .16s;
     }
-    .status.error {
-      color: var(--red);
-      background: var(--pill-red);
-      border-color: var(--red);
-      font-weight: 650;
+    .column:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px color-mix(in srgb, hsl(var(--h, 220) 45% 40%) 14%, transparent),
+                  0 18px 44px -16px color-mix(in srgb, hsl(var(--h, 220) 45% 40%) 36%, transparent);
     }
-    .empty {
-      padding: 36px;
-      text-align: center;
-      color: var(--muted);
+    .column .topline {
+      position: absolute; inset: 0 0 auto 0; height: 4px;
+      background: hsl(var(--h, 220) 70% 55%);
+      background: linear-gradient(90deg, hsl(var(--h, 220) 72% 56%), hsl(var(--h, 220) 72% 62%));
+      opacity: .9;
     }
+    .column.is-refreshing { }
+    .column.is-refreshing::before {
+      content: ""; position: absolute; inset: 4px 0 auto; height: 3px; z-index: 2;
+      background: linear-gradient(90deg, transparent, hsl(var(--h, 220) 80% 60%), transparent);
+      background-size: 180% 100%; animation: refreshBar 1s linear infinite;
+    }
+    .column.is-refreshing .column-head { background: color-mix(in srgb, hsl(var(--h, 220) 75% 55%) 10%, var(--panel)); }
+
+    .column-head {
+      padding: 18px 17px 12px; border-bottom: 0;
+      background: linear-gradient(180deg,
+        color-mix(in srgb, hsl(var(--h, 220) 75% 55%) 9%, var(--panel)),
+        color-mix(in srgb, hsl(var(--h, 220) 75% 55%) 3%, var(--panel)));
+      transition: background .16s;
+    }
+    .column-title { display: flex; align-items: center; gap: 8px; }
+    .column-title .dot { width: 9px; height: 9px; border-radius: 999px; background: hsl(var(--h, 220) 70% 55%); flex-shrink: 0; }
+    .column-name { font-size: 15px; font-weight: 750; overflow-wrap: anywhere; min-width: 0; }
+    .column-refresh {
+      margin-left: auto; height: 27px; padding: 0 10px; font-size: 12px; font-weight: 650;
+      flex-shrink: 0; border-radius: 7px; color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+      background: var(--panel);
+    }
+    .column-refresh:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+    .column-refresh.is-loading { min-width: 74px; color: var(--muted); pointer-events: none; }
+    .column-sub {
+      color: var(--muted); font-size: 12px; margin-top: 4px; overflow-wrap: anywhere;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .column-stats {
+      display: flex; align-items: center; gap: 5px; margin-top: 8px;
+      color: var(--muted); font-size: 12px; flex-wrap: wrap; font-variant-numeric: tabular-nums;
+    }
+    .column-stats > span + span::before { content: "·"; margin-right: 5px; color: var(--line-strong); }
+    .elapsed { color: var(--accent); font-weight: 700; }
+    .balance { color: var(--green); font-weight: 750; }
+    .balance.low { color: var(--amber); }
+    .balance.none { color: var(--red); }
+
+    .pill {
+      display: inline-flex; align-items: center; min-height: 20px; padding: 1px 8px;
+      border-radius: 999px; font-size: 11px; font-weight: 750; white-space: nowrap;
+      background: var(--green-bg); color: var(--green);
+    }
+    .pill.error { background: var(--red-bg); color: var(--red); }
+    .pill.busy { background: var(--accent-soft); color: var(--accent); }
+
+    /* ── Groups ─────────────────────────────── */
+    .group-list { display: flex; flex-direction: column; padding: 4px 0; }
+    .group-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 8px 17px;
+      border-bottom: 0; position: relative; transition: background .12s;
+      border-top: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
+    }
+    .group-item:first-child { border-top: 0; }
+    .group-item:hover { background: color-mix(in srgb, var(--panel-2) 78%, transparent); }
+    .group-info { flex: 1; min-width: 0; }
+    .group-name { font-weight: 650; font-size: 13.5px; overflow-wrap: anywhere; }
+    .desc { color: var(--muted); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+    .group-side { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+    .group-conc { color: var(--muted); font-size: 11.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    .multiplier {
+      display: inline-flex; justify-content: center; min-width: 54px; padding: 2.5px 8px;
+      border-radius: 7px; font-weight: 800; font-size: 12.5px; font-variant-numeric: tabular-nums;
+      background: var(--green-bg); color: var(--green);
+    }
+    .multiplier.warn { background: var(--amber-bg); color: var(--amber); }
+    .multiplier.high { background: var(--red-bg); color: var(--red); }
+    .multiplier.best {
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #06b6d4));
+      color: #fff; box-shadow: 0 2px 8px -2px var(--accent-ring);
+    }
+    .mult-wrap { display: inline-flex; align-items: center; gap: 4px; }
+    .mult-delta {
+      font-size: 10.5px; font-weight: 750; padding: 1px 5px; border-radius: 5px;
+      white-space: nowrap; font-variant-numeric: tabular-nums;
+    }
+    .mult-delta.up { background: var(--red-bg); color: var(--red); }
+    .mult-delta.down { background: var(--green-bg); color: var(--green); }
+    .mult-delta.new-group { background: var(--blue-bg); color: var(--blue); }
+    .mult-delta.gone { background: var(--amber-bg); color: var(--amber); }
+    .group-item.is-new { box-shadow: inset 3px 0 0 var(--green); }
+    .group-item.is-gone { opacity: .55; box-shadow: inset 3px 0 0 var(--amber); }
+    .group-item.is-gone .group-name { text-decoration: line-through; }
+
+    .empty { padding: 30px; text-align: center; color: var(--muted); font-size: 13px; }
+    .column-error { color: var(--red); font-size: 12.5px; line-height: 1.5; padding: 12px 15px; overflow-wrap: anywhere; }
+
+    /* ── Toasts ─────────────────────────────── */
+    #toastWrap {
+      position: fixed; top: 14px; right: 14px; z-index: 300;
+      display: flex; flex-direction: column; gap: 8px; max-width: min(420px, calc(100vw - 28px));
+      pointer-events: none;
+    }
+    .toast {
+      pointer-events: auto; cursor: pointer;
+      display: flex; align-items: flex-start; gap: 9px;
+      padding: 11px 14px; border-radius: 11px; font-size: 13px; line-height: 1.5;
+      background: var(--panel); border: 1px solid var(--line);
+      box-shadow: 0 8px 28px -6px rgba(0, 0, 0, .22);
+      opacity: 0; transform: translateX(16px);
+      transition: opacity .18s ease, transform .18s ease;
+      overflow-wrap: anywhere;
+    }
+    .toast.show { opacity: 1; transform: translateX(0); }
+    .toast .t-icon { flex-shrink: 0; width: 18px; height: 18px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; margin-top: 1px; }
+    .toast.toast-success .t-icon { background: var(--green-bg); color: var(--green); }
+    .toast.toast-error .t-icon { background: var(--red-bg); color: var(--red); }
+    .toast.toast-info .t-icon { background: var(--blue-bg); color: var(--blue); }
+
+    /* ── Modal ──────────────────────────────── */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      padding: 20px;
+      position: fixed; inset: 0; background: rgba(9, 12, 18, .5);
+      backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+      display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px;
     }
     .modal-overlay.open { display: flex; }
     .modal {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      width: 100%;
-      max-width: 560px;
-      max-height: 85vh;
-      overflow: auto;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+      background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+      width: 100%; max-width: 580px; max-height: 85vh; overflow: auto;
+      box-shadow: 0 20px 60px -10px rgba(0, 0, 0, .4);
+      animation: dropIn .18s ease;
     }
     .modal-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 20px; border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; background: var(--panel); z-index: 1;
     }
-    .modal-title {
-      font-size: 17px;
-      font-weight: 750;
-    }
-    .modal-close {
-      background: transparent;
-      border: 0;
-      font-size: 22px;
-      line-height: 1;
-      padding: 0 4px;
-      color: var(--muted);
-    }
-    .modal-body {
-      padding: 20px;
-    }
-    .form-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 14px;
-    }
-    .form-row label {
-      font-size: 13px;
-      font-weight: 650;
-      color: var(--muted);
-    }
-    .form-row input, .form-row select {
-      width: 100%;
-    }
-    .form-hint {
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .form-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      margin-top: 8px;
-    }
+    .modal-title { font-size: 16px; font-weight: 750; }
+    .modal-close { background: transparent; border: 0; font-size: 22px; line-height: 1; padding: 0 4px; color: var(--muted); }
+    .modal-close:hover { background: transparent; color: var(--text); }
+    .modal-body { padding: 18px 20px 20px; }
+    .form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 13px; }
+    .form-row label { font-size: 12.5px; font-weight: 650; color: var(--muted); }
+    .form-row input, .form-row select { width: 100%; }
+    .form-hint { font-size: 12px; color: var(--muted); }
+    .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
     .form-error {
-      display: none;
-      margin-top: 4px;
-      padding: 10px 12px;
-      border-radius: 6px;
-      background: var(--pill-red);
-      color: var(--red);
-      font-size: 13px;
-      line-height: 1.45;
-      overflow-wrap: anywhere;
+      display: none; margin-top: 4px; padding: 10px 12px; border-radius: var(--radius-sm);
+      background: var(--red-bg); color: var(--red); font-size: 13px; line-height: 1.45; overflow-wrap: anywhere;
     }
     .form-error.show { display: block; }
     .login-confirm {
-      margin-top: 8px;
-      padding: 12px;
-      border-radius: 6px;
-      background: var(--pill-amber);
-      text-align: center;
+      margin-top: 8px; padding: 12px; border-radius: var(--radius-sm);
+      background: var(--amber-bg); border: 1px solid color-mix(in srgb, var(--amber) 35%, var(--line)); text-align: center;
     }
-    .login-confirm-text {
-      margin-bottom: 10px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .login-confirm button {
-      width: 100%;
-    }
-    .page-login-confirm {
-      display: none;
-      margin: 0 0 12px;
-      padding: 12px 14px;
-      border: 1px solid color-mix(in srgb, var(--amber) 35%, var(--line));
-      border-radius: 8px;
-      background: var(--pill-amber);
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .page-login-confirm.show {
-      display: flex;
-    }
-    .page-login-confirm-text {
-      flex: 1 1 auto;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--text);
-    }
-    .page-login-confirm button {
-      flex: 0 0 auto;
-      white-space: nowrap;
-    }
-    .site-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
+    .login-confirm-text { margin-bottom: 10px; font-size: 13px; line-height: 1.5; }
+    .login-confirm button { width: 100%; }
+    .site-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
     .site-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2);
     }
-    .site-row-info {
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-    .site-row-name {
-      font-weight: 700;
-      overflow-wrap: anywhere;
-    }
-    .site-row-meta {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 2px;
-      overflow-wrap: anywhere;
-    }
-    .site-row-actions {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .site-row-actions button {
-      padding: 0 10px;
-      height: 30px;
-      font-size: 13px;
-    }
-    .btn-danger {
-      color: var(--red);
-      border-color: var(--red);
-    }
-    .modal-section-title {
-      font-size: 14px;
-      font-weight: 700;
-      margin: 0 0 12px;
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-    }
-    @media (max-width: 820px) {
-      header { padding: 16px; }
+    .site-row-info { flex: 1 1 auto; min-width: 0; }
+    .site-row-name { font-weight: 700; font-size: 13.5px; overflow-wrap: anywhere; }
+    .site-row-meta { color: var(--muted); font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+    .site-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .site-row-actions button { padding: 0 10px; height: 29px; font-size: 12.5px; }
+    .btn-danger { color: var(--red); border-color: color-mix(in srgb, var(--red) 45%, var(--line)); }
+    .btn-danger:hover:not(:disabled) { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+    .modal-section-title { font-size: 14px; font-weight: 700; margin: 0 0 12px; padding-top: 15px; border-top: 1px solid var(--line); }
+
+    @media (max-width: 860px) {
+      header { padding: 12px 16px 10px; }
       .topbar { align-items: flex-start; flex-direction: column; }
       .actions { justify-content: flex-start; }
-      main { padding: 14px 16px 24px; }
-      .toolbar { grid-template-columns: 1fr; }
-      .summary { justify-self: start; }
+      main { padding: 12px 14px 18px; }
+      .toolbar { grid-template-columns: 1fr auto; }
+      #updated { font-size: 12px; }
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    @keyframes refreshBar {
-      from { background-position: 180% 0; }
-      to { background-position: -180% 0; }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes refreshBar { from { background-position: 180% 0; } to { background-position: -180% 0; } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+    @keyframes dropIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
   </style>
 </head>
 <body>
   <header>
     <div class="topbar">
       <div>
-        <h1>relay2rate</h1>
+        <div class="brand">
+          <span class="logo">¥</span>
+          <h1>relay2rate</h1>
+          <span class="tag">倍率看板</span>
+        </div>
         <div class="meta" id="updated"></div>
       </div>
       <div class="actions">
         <button class="primary" id="refreshAll">刷新全部</button>
-        <select id="autoRefresh">
+        <select id="autoRefresh" title="自动刷新间隔">
           <option value="0">手动刷新</option>
           <option value="300000">每 5 分钟</option>
           <option value="900000">每 15 分钟</option>
           <option value="1800000">每 30 分钟</option>
         </select>
         <button id="manageSites">管理平台</button>
-        <button id="themeToggle" title="切换主题" aria-label="切换主题">🌙</button>
+        <button id="themeToggle" class="icon-btn" title="切换主题" aria-label="切换主题">🌙</button>
       </div>
     </div>
   </header>
@@ -721,14 +454,11 @@
       </select>
       <div class="summary" id="summary"></div>
     </div>
-    <div class="status" id="status" role="status" aria-live="polite"></div>
-    <div class="page-login-confirm" id="pageLoginConfirm">
-      <div class="page-login-confirm-text" id="pageLoginConfirmText"></div>
-      <button class="primary" id="pageLoginConfirmBtn">我已完成登录</button>
-    </div>
+    <div class="login-bar" id="loginBar"></div>
     <div class="channel-bar" id="channelBar"></div>
     <div id="content"></div>
   </main>
+  <div id="toastWrap" aria-live="polite"></div>
   <div class="modal-overlay" id="manageModal">
     <div class="modal">
       <div class="modal-head">
@@ -785,16 +515,32 @@
     const embeddedData = {};
     let data = embeddedData;
     let autoTimer = null;
-    let activeRefreshSiteId = null;
-    let refreshAllState = null;
 
+    // ── 刷新状态：per-site，每个站点互不影响 ────────────────
+    // refreshingSites: siteId -> { startedAt, timer, promise }
+    const refreshingSites = new Map();
+    // refreshAllState: { total, done } | null —— 仅控制“刷新全部”按钮自身
+    let refreshAllState = null;
+    let formBusy = false;
+    let loginPollTimer = null;
+
+    const els = {
+      updated: document.getElementById("updated"),
+      refreshAll: document.getElementById("refreshAll"),
+      autoRefresh: document.getElementById("autoRefresh"),
+      search: document.getElementById("search"),
+      sort: document.getElementById("sort"),
+      summary: document.getElementById("summary"),
+      content: document.getElementById("content"),
+      channelBar: document.getElementById("channelBar"),
+      loginBar: document.getElementById("loginBar")
+    };
+
+    // ── 主题 ─────────────────────────────────
     const themeToggle = document.getElementById("themeToggle");
     function applyTheme(theme) {
-      if (theme === "auto") {
-        document.documentElement.removeAttribute("data-theme");
-      } else {
-        document.documentElement.setAttribute("data-theme", theme);
-      }
+      if (theme === "auto") document.documentElement.removeAttribute("data-theme");
+      else document.documentElement.setAttribute("data-theme", theme);
       try { localStorage.setItem("theme", theme); } catch {}
       updateThemeIcon();
     }
@@ -813,22 +559,29 @@
       window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateThemeIcon);
     })();
     themeToggle.addEventListener("click", () => {
-      const next = currentResolvedTheme() === "dark" ? "light" : "dark";
-      applyTheme(next);
+      applyTheme(currentResolvedTheme() === "dark" ? "light" : "dark");
     });
 
-    const els = {
-      updated: document.getElementById("updated"),
-      refreshAll: document.getElementById("refreshAll"),
-      autoRefresh: document.getElementById("autoRefresh"),
-      search: document.getElementById("search"),
-      sort: document.getElementById("sort"),
-      summary: document.getElementById("summary"),
-      status: document.getElementById("status"),
-      content: document.getElementById("content"),
-      channelBar: document.getElementById("channelBar")
-    };
+    // ── Toast ────────────────────────────────
+    const TOAST_ICONS = { success: "✓", error: "✕", info: "i" };
+    function toast(message, kind = "info", durationMs = 4000) {
+      const box = document.getElementById("toastWrap");
+      while (box.children.length >= 4) box.firstElementChild.remove();
+      const el = document.createElement("div");
+      el.className = "toast toast-" + kind;
+      el.innerHTML = '<span class="t-icon">' + (TOAST_ICONS[kind] || "i") + '</span><span></span>';
+      el.lastElementChild.textContent = message;
+      box.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("show"));
+      const dismiss = () => {
+        el.classList.remove("show");
+        setTimeout(() => el.remove(), 200);
+      };
+      el.addEventListener("click", dismiss);
+      setTimeout(dismiss, durationMs);
+    }
 
+    // ── 数据加载 ─────────────────────────────
     async function loadData() {
       try {
         const res = await fetch("/api/data", { cache: "no-store" });
@@ -839,113 +592,184 @@
       render();
     }
 
-    async function refresh(siteId) {
-      if (isRefreshBusy()) return;
-      if (siteId === "all") {
-        await refreshAllIncrementally();
-        return;
-      }
-      await refreshOneSite(siteId);
-    }
-
-    async function refreshOneSite(siteId) {
-      const targetName = siteId === "all" ? "全部站点" : getSiteLabel(siteId);
-      const startedAt = Date.now();
-      const updateProgress = () => {
-        const seconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
-        setStatus("正在刷新 " + targetName + "... 已用 " + seconds + " 秒", "busy");
-      };
-      setBusy(true, siteId);
-      updateProgress();
-      const progressTimer = setInterval(updateProgress, 1000);
-      startLoginPoll("page");
-      try {
-        const refreshedPayload = await requestRefresh(siteId);
-        setStatus(buildRefreshDoneMessage(siteId, refreshedPayload, Date.now() - startedAt), "success");
-      } catch (error) {
-        if (!error.payload) await loadData();
-        setStatus(error.message || String(error), "error");
-        return;
-      } finally {
-        clearInterval(progressTimer);
-        stopLoginPoll();
-        setBusy(false);
-      }
-    }
-
-    async function refreshAllIncrementally() {
-      const siteIds = await getRefreshSiteIds();
-      if (!siteIds.length) {
-        setStatus("暂无可刷新的平台", "error");
-        return;
-      }
-
-      const startedAt = Date.now();
-      const failures = [];
-      refreshAllState = { current: 0, done: 0, total: siteIds.length };
-      startLoginPoll("page");
-
-      for (let i = 0; i < siteIds.length; i++) {
-        const currentSiteId = siteIds[i];
-        const targetName = getSiteLabel(currentSiteId);
-        const siteStartedAt = Date.now();
-        const updateProgress = () => {
-          const seconds = Math.max(1, Math.round((Date.now() - siteStartedAt) / 1000));
-          setStatus("正在刷新 " + targetName + "（" + (i + 1) + "/" + siteIds.length + "）... 已用 " + seconds + " 秒", "busy");
+    function normalizePayload(input) {
+      if (input && Array.isArray(input.sites)) return input;
+      if (input && Array.isArray(input.groups)) {
+        return {
+          provider: "All",
+          siteId: "all",
+          scrapedAt: input.scrapedAt,
+          sites: [{
+            provider: input.provider,
+            siteId: input.siteId,
+            framework: input.framework,
+            sourceUrl: input.sourceUrl,
+            scrapedAt: input.scrapedAt,
+            groups: input.groups
+          }],
+          groups: input.groups.map(group => ({ ...group, provider: input.provider, siteId: input.siteId, framework: input.framework, sourceUrl: input.sourceUrl, scrapedAt: input.scrapedAt }))
         };
+      }
+      return { sites: [], groups: [], scrapedAt: new Date().toISOString() };
+    }
 
-        refreshAllState.current = i + 1;
-        setBusy(true, currentSiteId);
-        updateProgress();
-        const progressTimer = setInterval(updateProgress, 1000);
+    function aggregateGroupsFromSites(sites) {
+      return sites.flatMap(site => (site.groups || []).map(group => ({ ...group, provider: site.provider, siteId: site.siteId, framework: site.framework, sourceUrl: site.sourceUrl, scrapedAt: site.scrapedAt })));
+    }
 
+    // ── per-site 异步刷新核心 ─────────────────
+    function refresh(siteId) {
+      if (siteId === "all") { refreshAll(); return; }
+      kickSiteRefresh(siteId);
+    }
+
+    function kickSiteRefresh(siteId) {
+      const existing = refreshingSites.get(siteId);
+      if (existing) return existing.promise;
+
+      const state = { startedAt: Date.now(), timer: null };
+      state.promise = (async () => {
+        const name = getSiteLabel(siteId);
         try {
-          const refreshedPayload = await requestRefresh(currentSiteId);
-          const refreshedSite = (refreshedPayload.sites || []).find(s => s.siteId === currentSiteId);
-          refreshAllState.done = i + 1;
-          applyRefreshUi();
-          render();
-          setStatus("已刷新 " + targetName + "（" + (i + 1) + "/" + siteIds.length + "），分组 " + ((refreshedSite?.groups || []).length) + " 个", "success");
+        const body = await requestRefresh(siteId);
+        const refreshedPayload = body?.data ? normalizePayload(body.data) : null;
+        if (!refreshedPayload) throw new Error("刷新失败");
+          applyRefreshedSite(siteId, refreshedPayload);
+          const site = (refreshedPayload.sites || []).find(s => s.siteId === siteId);
+          const elapsed = elapsedSeconds(state.startedAt);
+          toast(name + " 刷新完成 · 分组 " + ((site?.groups || []).length) + " 个 · " + elapsed + " 秒", "success");
+          return { ok: true };
         } catch (error) {
-          failures.push({ siteId: currentSiteId, name: targetName, error: error.message || String(error) });
-          refreshAllState.done = i + 1;
-          applyRefreshUi();
-          if (!error.payload) await loadData();
-          else render();
-          setStatus(targetName + " 刷新失败（" + (i + 1) + "/" + siteIds.length + "），继续刷新下一个：" + (error.message || String(error)), "error");
+          if (error.payload) {
+            try { applyRefreshedSite(siteId, error.payload); } catch {}
+          } else {
+            await loadData();
+          }
+          toast(name + " 刷新失败：" + (error.message || String(error)), "error", 6000);
+          return { ok: false, error };
         } finally {
-          clearInterval(progressTimer);
+          clearInterval(state.timer);
+          refreshingSites.delete(siteId);
+          updateCard(siteId);
+          syncGlobalUi();
+          syncLoginPoll();
         }
-      }
+      })();
 
-      const elapsed = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
-      const total = siteIds.length;
-      refreshAllState = null;
-      stopLoginPoll();
-      setBusy(false);
-      if (failures.length) {
-        setStatus("刷新完成：成功 " + (total - failures.length) + "/" + total + "，失败 " + failures.length + " 个，用时 " + elapsed + " 秒", "error");
-      } else {
-        const normalized = normalizePayload(data);
-        setStatus("刷新完成：平台 " + total + " 个，分组 " + (normalized.groups || []).length + " 个，用时 " + elapsed + " 秒", "success");
-      }
+      refreshingSites.set(siteId, state);
+      updateCard(siteId);
+      state.timer = setInterval(() => updateCardTick(siteId), 1000);
+      syncGlobalUi();
+      syncLoginPoll();
+      return state.promise;
     }
 
     async function requestRefresh(siteId) {
       const res = await fetch("/api/refresh?site=" + encodeURIComponent(siteId), { method: "POST" });
       let body = null;
-      try {
-        body = await res.json();
-      } catch {
-        throw new Error("刷新失败");
-      }
-      const refreshedPayload = body?.data ? mergeRefreshedPayload(siteId, body.data) : null;
+      try { body = await res.json(); } catch { throw new Error("刷新失败"); }
+      const refreshedPayload = body?.data ? normalizePayload(body.data) : null;
       if (!res.ok || !body.ok) {
         const error = new Error(body?.error || "刷新失败");
         error.payload = refreshedPayload;
         throw error;
       }
-      return refreshedPayload;
+      return body;
+    }
+
+    function elapsedSeconds(startedAt) {
+      return Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+    }
+
+    // 将单个站点的刷新结果合并进 data，只更新对应卡片
+    function applyRefreshedSite(siteId, refreshedPayload) {
+      const updated = (refreshedPayload.sites || []).find(site => site.siteId === siteId);
+      const current = normalizePayload(data);
+      if (!updated) {
+        data = refreshedPayload;
+        render();
+        return;
+      }
+      const currentSites = current.sites || [];
+      const hasSite = currentSites.some(site => site.siteId === siteId);
+      const sites = hasSite
+        ? currentSites.map(site => site.siteId === siteId ? updated : site)
+        : [...currentSites, updated];
+      data = { ...current, scrapedAt: refreshedPayload.scrapedAt || current.scrapedAt, sites, groups: aggregateGroupsFromSites(sites) };
+      updateCard(siteId);
+      syncHeaderMeta();
+    }
+
+    // 刷新全部：逐个站点跑，但不阻塞其他站点按钮；
+    // 已在刷新中的站点直接等它完成，不重复刷新。
+    async function refreshAll() {
+      if (refreshAllState) return;
+      const siteIds = await getRefreshSiteIds();
+      if (!siteIds.length) { toast("暂无可刷新的平台", "error"); return; }
+
+      refreshAllState = { total: siteIds.length, done: 0 };
+      syncGlobalUi();
+      const startedAt = Date.now();
+      let failures = 0;
+
+      for (const siteId of siteIds) {
+        const result = await kickSiteRefresh(siteId);
+        if (!result.ok) failures++;
+        refreshAllState.done++;
+        syncGlobalUi();
+      }
+
+      refreshAllState = null;
+      syncGlobalUi();
+      const elapsed = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
+      const total = siteIds.length;
+      if (failures) {
+        toast("全部刷新结束：成功 " + (total - failures) + "/" + total + " · 用时 " + elapsed + " 秒", "error", 6500);
+      } else {
+        const normalized = normalizePayload(data);
+        toast("已刷新全部 " + total + " 个平台 · 分组 " + (normalized.groups || []).length + " 个 · 用时 " + elapsed + " 秒", "success", 5200);
+      }
+    }
+
+    async function getRefreshSiteIds() {
+      const currentSites = sortSitesByOrder(normalizePayload(data).sites || []);
+      if (currentSites.length) return [...new Set(currentSites.map(site => site.siteId).filter(Boolean))];
+      try {
+        const res = await fetch("/api/config", { cache: "no-store" });
+        const body = await res.json();
+        if (body.ok && Array.isArray(body.sites)) return [...new Set(sortSitesByOrder(body.sites).map(site => site.siteId).filter(Boolean))];
+      } catch {}
+      return [];
+    }
+
+    // ── 渲染 ─────────────────────────────────
+    function hueFor(str) {
+      let h = 0;
+      for (const c of String(str)) h = (h * 31 + c.charCodeAt(0)) % 360;
+      return h;
+    }
+
+    function currentCtx() {
+      const query = els.search.value.trim().toLowerCase();
+      const sort = els.sort.value;
+      const allGroups = normalizePayload(data).groups || [];
+      const allMults = allGroups.map(g => Number(g.multiplier)).filter(Number.isFinite);
+      const best = allMults.length ? Math.min(...allMults) : Infinity;
+      return { query, sort, best };
+    }
+
+    function sortGroupsOf(arr, sort) {
+      return arr.slice().sort((a, b) => {
+        if (sort === "name") return String(a.name).localeCompare(String(b.name), "zh-CN");
+        if (sort === "concurrency") return (Number(b.concurrency) || 0) - (Number(a.concurrency) || 0);
+        return Number(a.multiplier || 0) - Number(b.multiplier || 0);
+      });
+    }
+
+    function matchGroupOf(group, query) {
+      if (!query) return true;
+      const haystack = [group.name, group.description].filter(Boolean).join(" ").toLowerCase();
+      return haystack.includes(query);
     }
 
     function render() {
@@ -953,52 +777,224 @@
       const hidden = getHiddenSites();
       const allSites = sortSitesByOrder(data.sites || []);
       const sites = allSites.filter(s => !hidden.has(s.siteId));
-      const allGroups = (data.groups || []).filter(g => !hidden.has(g.siteId));
-      const best = Math.min(...allGroups.map(group => Number(group.multiplier)).filter(Number.isFinite));
+      const ctx = currentCtx();
 
-      els.updated.textContent = "最后聚合：" + formatDate(data.scrapedAt) + "，平台 " + allSites.length + " 个，分组 " + allGroups.length + " 个";
-
+      els.summary.textContent = "显示 " + countShown(sites, ctx) + " / " + (data.groups || []).filter(g => !hidden.has(g.siteId)).length;
       renderChannelBar(allSites, hidden);
+      syncHeaderMeta();
 
-      const query = els.search.value.trim().toLowerCase();
-      const sort = els.sort.value;
-
-      const sortGroups = (arr) => arr.slice().sort((a, b) => {
-        if (sort === "name") return String(a.name).localeCompare(String(b.name), "zh-CN");
-        if (sort === "concurrency") return (Number(b.concurrency) || 0) - (Number(a.concurrency) || 0);
-        return Number(a.multiplier || 0) - Number(b.multiplier || 0);
-      });
-
-      const matchGroup = (group) => {
-        const haystack = [group.name, group.description].filter(Boolean).join(" ").toLowerCase();
-        return !query || haystack.includes(query);
-      };
-
-      let totalShown = 0;
-      const columns = sites.map(site => {
-        const matched = sortGroups((site.groups || []).filter(matchGroup));
-        const disappeared = (site.disappearedGroups || []).filter(matchGroup);
-        totalShown += matched.length;
-        return renderColumn(site, matched, best, disappeared);
-      }).join("");
-
-      els.summary.textContent = "显示 " + totalShown + " / " + allGroups.length;
-      if (!sites.length || !totalShown) {
+      if (!sites.length || !countShown(sites, ctx)) {
         els.content.innerHTML = '<div class="empty">没有可显示的分组</div>';
         return;
       }
-      els.content.innerHTML = '<div class="columns">' + columns + '</div>';
+      els.content.innerHTML = '<div class="columns">' + sites.map(site => renderColumnHTML(site, ctx)).join("") + '</div>';
+    }
+
+    function countShown(sites, ctx) {
+      let n = 0;
+      for (const site of sites) n += (site.groups || []).filter(g => matchGroupOf(g, ctx.query)).length;
+      return n;
     }
 
     function renderChannelBar(allSites, hidden) {
       if (!allSites.length) { els.channelBar.innerHTML = ""; return; }
       els.channelBar.innerHTML = allSites.map(site => {
         const visible = !hidden.has(site.siteId);
-        return '<label class="channel-chip' + (visible ? " active" : "") + '" draggable="true" data-channel="' + escapeHtml(site.siteId) + '">' +
+        return '<label class="channel-chip' + (visible ? " active" : "") + '" draggable="true" style="--h:' + hueFor(site.siteId) + '" data-channel="' + escapeHtml(site.siteId) + '">' +
+          '<span class="dot"></span>' +
           '<input type="checkbox" data-channel="' + escapeHtml(site.siteId) + '"' + (visible ? " checked" : "") + '>' +
           escapeHtml(site.name || site.siteId) +
           '</label>';
       }).join("");
+    }
+
+    function renderColumnHTML(site, ctx) {
+      const query = ctx.query, sort = ctx.sort, best = ctx.best;
+      const groups = sortGroupsOf((site.groups || []).filter(g => matchGroupOf(g, query)), sort);
+      const disappeared = (site.disappearedGroups || []).filter(g => matchGroupOf(g, query));
+      const isRefreshing = refreshingSites.has(site.siteId);
+      const state = refreshingSites.get(site.siteId);
+      const ok = !site.error;
+
+      const pill = isRefreshing
+        ? '<span class="pill busy">刷新中</span>'
+        : '<span class="pill' + (ok ? "" : " error") + '">' + (ok ? "正常" : "失败") + "</span>";
+      const refreshBtn = isRefreshing
+        ? '<button class="column-refresh is-loading" data-refresh="' + escapeHtml(site.siteId) + '" disabled title="正在刷新"><span data-elapsed>' + elapsedSeconds(state.startedAt) + "s</span></button>"
+        : '<button class="column-refresh" data-refresh="' + escapeHtml(site.siteId) + '" title="刷新该平台">刷新</button>';
+
+      const elapsedHtml = isRefreshing ? '<span class="elapsed" data-elapsed-stats>刷新 ' + elapsedSeconds(state.startedAt) + "s</span>" : "";
+      const head = '<div class="topline"></div><div class="column-head" style="--h:' + hueFor(site.siteId) + '">' +
+        '<div class="column-title" style="--h:' + hueFor(site.siteId) + '"><span class="dot"></span>' +
+        '<div class="column-name">' + escapeHtml(site.provider || site.siteId) + "</div>" + pill + refreshBtn + "</div>" +
+        '<div class="column-sub" title="' + escapeHtml(site.sourceUrl || "") + '">' + escapeHtml(site.sourceUrl || site.siteId) + "</div>" +
+        '<div class="column-stats"><span>分组 ' + groups.length + " 个</span><span>" + escapeHtml(site.framework || "-") + "</span>" +
+        formatBalance(site.balance) + '<span title="最后采集：' + escapeHtml(formatDate(site.scrapedAt)) + '">' + formatRelative(site.scrapedAt) + "</span>" + elapsedHtml + "</div></div>";
+
+      const cls = "column" + (isRefreshing ? " is-refreshing" : "") + '" data-site="' + escapeHtml(site.siteId);
+
+      if (site.error && !groups.length && !disappeared.length) {
+        return '<div class="' + cls + '">' + head + '<div class="column-error">' + escapeHtml(site.error) + "</div></div>";
+      }
+      if (!groups.length && !disappeared.length) {
+        return '<div class="' + cls + '">' + head + '<div class="empty">无匹配分组</div></div>';
+      }
+
+      const list = '<div class="group-list">' + groups.map(group => renderGroupItem(group, best)).join("") +
+        disappeared.map(renderGoneItem).join("") + "</div>";
+      return '<div class="' + cls + '">' + head + list + "</div>";
+    }
+
+    function multTier(multiplier, best) {
+      if (multiplier === best) return "multiplier best";
+      if (multiplier >= 2) return "multiplier high";
+      if (multiplier >= 1) return "multiplier warn";
+      return "multiplier";
+    }
+
+    function renderGroupItem(group, best) {
+      const multiplier = Number(group.multiplier);
+      const isNew = !!group.isNew;
+      const prev = group.prevMultiplier;
+      let deltaHtml = "";
+      if (isNew) {
+        deltaHtml = '<span class="mult-delta new-group">NEW</span>';
+      } else if (prev !== undefined && Number.isFinite(Number(prev)) && Number(prev) !== multiplier) {
+        const diff = multiplier - Number(prev);
+        const sign = diff > 0 ? "+" : "";
+        const cls = diff > 0 ? "up" : "down";
+        const arrow = diff > 0 ? "↑" : "↓";
+        deltaHtml = '<span class="mult-delta ' + cls + '" title="上次 ' + escapeHtml(String(prev)) + 'x">' + arrow + sign + diff.toFixed(2).replace(/\.?0+$/, "") + "</span>";
+      }
+      return '<div class="group-item' + (isNew ? " is-new" : "") + '">' +
+        '<div class="group-info"><div class="group-name">' + escapeHtml(group.name) + "</div>" +
+        (group.description ? '<div class="desc">' + escapeHtml(group.description) + "</div>" : "") + "</div>" +
+        '<div class="group-side"><span class="mult-wrap"><span class="' + multTier(multiplier, best) + '">' + escapeHtml(String(group.multiplier)) + "x</span>" + deltaHtml + "</span>" +
+        (group.concurrency != null ? '<span class="group-conc">并发 ' + escapeHtml(String(group.concurrency)) + "</span>" : "") + "</div>" +
+        "</div>";
+    }
+
+    function renderGoneItem(g) {
+      return '<div class="group-item is-gone">' +
+        '<div class="group-info"><div class="group-name">' + escapeHtml(g.name) + "</div>" +
+        (g.description ? '<div class="desc">' + escapeHtml(g.description) + "</div>" : "") + "</div>" +
+        '<div class="group-side"><span class="mult-wrap"><span class="multiplier">' + escapeHtml(String(g.multiplier)) + 'x</span>' +
+        '<span class="mult-delta gone">✕ 消失</span></span></div>' +
+        "</div>";
+    }
+
+    // 只重建单个站点卡片（保持滚动与其他卡片不动）
+    function updateCard(siteId) {
+      const old = els.content.querySelector('.column[data-site="' + cssEscape(siteId) + '"]');
+      if (!old) return;
+      const site = (normalizePayload(data).sites || []).find(s => s.siteId === siteId);
+      if (!site) return;
+      const tpl = document.createElement("template");
+      tpl.innerHTML = renderColumnHTML(site, currentCtx()).trim();
+      old.replaceWith(tpl.content.firstElementChild);
+    }
+
+    // 轻量 tick：只更新耗时数字，不动其他 DOM
+    function updateCardTick(siteId) {
+      const state = refreshingSites.get(siteId);
+      const card = els.content.querySelector('.column[data-site="' + cssEscape(siteId) + '"]');
+      if (!state || !card) return;
+      const s = elapsedSeconds(state.startedAt);
+      const btnElapsed = card.querySelector("[data-elapsed]");
+      if (btnElapsed) btnElapsed.textContent = s + "s";
+      const statElapsed = card.querySelector("[data-elapsed-stats]");
+      if (statElapsed) statElapsed.textContent = "刷新 " + s + "s";
+    }
+
+    function cssEscape(value) {
+      if (window.CSS && CSS.escape) return CSS.escape(value);
+      return String(value).replace(/["\\\]]/g, "\\$&");
+    }
+
+    // ── 全局 UI 同步（不阻塞、仅提示） ─────────
+    function syncGlobalUi() {
+      const running = refreshingSites.size;
+      if (refreshAllState) {
+        els.refreshAll.disabled = true;
+        els.refreshAll.classList.add("is-loading");
+        els.refreshAll.textContent = "刷新中 " + refreshAllState.done + "/" + refreshAllState.total;
+      } else {
+        els.refreshAll.disabled = false;
+        els.refreshAll.classList.toggle("is-loading", running > 0);
+        els.refreshAll.textContent = running > 0 ? "刷新全部（" + running + " 进行中）" : "刷新全部";
+      }
+      syncHeaderMeta();
+    }
+
+    function syncHeaderMeta() {
+      const normalized = normalizePayload(data);
+      const running = refreshingSites.size;
+      els.updated.innerHTML =
+        "最后聚合 " + escapeHtml(formatRelative(normalized.scrapedAt)) + " · 平台 " + (normalized.sites || []).length + " 个 · 分组 " + (normalized.groups || []).length + " 个" +
+        (running ? '&nbsp;<span class="running">' + running + " 个站点刷新中</span>" : "");
+    }
+
+    function getSiteLabel(siteId, payload = data) {
+      const site = (normalizePayload(payload).sites || []).find(s => s.siteId === siteId);
+      return site?.provider || site?.name || siteId;
+    }
+
+    // ── 格式化 ───────────────────────────────
+    function formatDate(value) {
+      if (!value) return "-";
+      const time = new Date(value);
+      if (Number.isNaN(time.getTime())) return "-";
+      return time.toLocaleString();
+    }
+
+    function formatRelative(value) {
+      if (!value) return "-";
+      const time = new Date(value);
+      if (Number.isNaN(time.getTime())) return "-";
+      const diff = Date.now() - time.getTime();
+      if (diff < 45_000) return "刚刚";
+      if (diff < 3600_000) return Math.max(1, Math.round(diff / 60000)) + " 分钟前";
+      if (diff < 86400_000) return Math.round(diff / 3600_000) + " 小时前";
+      return time.toLocaleDateString() + " " + time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function formatBalance(balance) {
+      if (!balance) return "";
+      let amount = null;
+      if (balance.currency === "USD") amount = balance.balance;
+      else if (balance.currency === "quota") amount = balance.quota != null ? balance.quota / 500000 : null;
+      if (amount == null) return "";
+      const cls = amount <= 0 ? "none" : amount < 1 ? "low" : "";
+      return '<span class="balance' + (cls ? " " + cls : "") + '">$' + amount.toFixed(2) + "</span>";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
+    }
+
+    // ── 渠道排序 / 显隐 ──────────────────────
+    function getHiddenSites() {
+      try { return new Set(JSON.parse(localStorage.getItem("hiddenSites") || "[]")); } catch { return new Set(); }
+    }
+    function setHiddenSites(set) {
+      localStorage.setItem("hiddenSites", JSON.stringify([...set]));
+    }
+    function getChannelOrder() {
+      try { return JSON.parse(localStorage.getItem("channelOrder") || "[]"); } catch { return []; }
+    }
+    function setChannelOrder(order) {
+      localStorage.setItem("channelOrder", JSON.stringify(order));
+    }
+    function sortSitesByOrder(sites) {
+      const order = getChannelOrder();
+      if (!order.length) return sites;
+      const indexById = new Map(order.map((id, i) => [id, i]));
+      return sites.slice().sort((a, b) => {
+        const ia = indexById.has(a.siteId) ? indexById.get(a.siteId) : order.length;
+        const ib = indexById.has(b.siteId) ? indexById.get(b.siteId) : order.length;
+        if (ia !== ib) return ia - ib;
+        return String(a.name || a.siteId).localeCompare(String(b.name || b.siteId), "zh-CN");
+      });
     }
 
     let dragSourceId = null;
@@ -1039,7 +1035,6 @@
       setChannelOrder(fullOrder);
       render();
     });
-
     els.channelBar.addEventListener("change", (event) => {
       const siteId = event.target.getAttribute("data-channel");
       if (!siteId) return;
@@ -1050,236 +1045,75 @@
       render();
     });
 
-    function renderColumn(site, groups, best, disappeared) {
-      disappeared = disappeared || [];
-      const ok = !site.error;
-      const isRefreshing = activeRefreshSiteId === "all" || activeRefreshSiteId === site.siteId;
-      const columnClass = "column" + (isRefreshing ? " is-refreshing" : "");
-      const pill = '<span class="pill ' + (ok ? "" : "error") + '">' + (ok ? "正常" : "失败") + '</span>';
-      const balanceHtml = formatBalance(site.balance);
-      const disabled = isRefreshBusy() ? " disabled" : "";
-      const refreshBtn = '<button class="column-refresh' + (isRefreshing ? ' is-loading' : '') + '" data-refresh="' + escapeHtml(site.siteId) + '"' + disabled + '>' + (isRefreshing ? '刷新中' : '刷新') + '</button>';
-      const head = '<div class="column-head">' +
-        '<div class="column-title"><div class="column-name">' + escapeHtml(site.provider || site.siteId) + '</div>' + pill + refreshBtn + '</div>' +
-        '<div class="column-sub">' + escapeHtml(site.sourceUrl || site.siteId) + '</div>' +
-        '<div class="column-stats"><span>分组 ' + groups.length + ' 个</span><span>' + escapeHtml(site.framework || "-") + '</span>' + balanceHtml + '<span>' + formatDate(site.scrapedAt) + '</span></div>' +
-        '</div>';
-
-      if (site.error && !groups.length && !disappeared.length) {
-        return '<div class="' + columnClass + '">' + head + '<div class="column-error">' + escapeHtml(site.error) + '</div></div>';
+    // ── 登录确认（per-site 芯片，可多站点并行） ─
+    function syncLoginPoll() {
+      const active = refreshingSites.size > 0 || formBusy;
+      if (active && !loginPollTimer) {
+        pollLogin();
+        loginPollTimer = setInterval(pollLogin, 1500);
+      } else if (!active && loginPollTimer) {
+        clearInterval(loginPollTimer);
+        loginPollTimer = null;
+        renderLoginPendings([]);
       }
-      if (!groups.length && !disappeared.length) {
-        return '<div class="' + columnClass + '">' + head + '<div class="empty">无匹配分组</div></div>';
-      }
-
-      const list = '<div class="group-list">' + groups.map(group => {
-        const multiplier = Number(group.multiplier);
-        const multClass = multiplier === best ? "multiplier best" : multiplier >= 1 ? "multiplier warn" : "multiplier";
-        const isNew = !!group.isNew;
-        const prev = group.prevMultiplier;
-        let deltaHtml = "";
-        if (isNew) {
-          deltaHtml = '<span class="mult-delta new-group">NEW</span>';
-        } else if (prev !== undefined && Number.isFinite(Number(prev)) && Number(prev) !== multiplier) {
-          const diff = multiplier - Number(prev);
-          const sign = diff > 0 ? "+" : "";
-          const cls = diff > 0 ? "up" : "down";
-          const arrow = diff > 0 ? "↑" : "↓";
-          const absStr = String(Number(prev));
-          deltaHtml = '<span class="mult-delta ' + cls + '" title="上次 ' + escapeHtml(absStr) + 'x">' + arrow + sign + diff.toFixed(2).replace(/\.?0+$/, "") + '</span>';
-        }
-        return '<div class="group-item' + (isNew ? ' is-new' : '') + '">' +
-          '<div class="group-info"><div class="group-name">' + escapeHtml(group.name) + '</div>' +
-          (group.description ? '<div class="desc">' + escapeHtml(group.description) + '</div>' : '') + '</div>' +
-          '<div class="group-side"><span class="mult-wrap"><span class="' + multClass + '">' + escapeHtml(String(group.multiplier)) + 'x</span>' + deltaHtml + '</span>' +
-          (group.concurrency != null ? '<span class="group-conc">并发 ' + escapeHtml(String(group.concurrency)) + '</span>' : '') + '</div>' +
-          '</div>';
-      }).join("") + disappeared.map(g => {
-        return '<div class="group-item is-gone">' +
-          '<div class="group-info"><div class="group-name">' + escapeHtml(g.name) + '</div>' +
-          (g.description ? '<div class="desc">' + escapeHtml(g.description) + '</div>' : '') + '</div>' +
-          '<div class="group-side"><span class="mult-wrap"><span class="multiplier">' + escapeHtml(String(g.multiplier)) + 'x</span>' +
-          '<span class="mult-delta gone">✕ 消失</span></span></div>' +
-          '</div>';
-      }).join("") + '</div>';
-
-      return '<div class="' + columnClass + '">' + head + list + '</div>';
     }
 
-    function normalizePayload(input) {
-      if (input && Array.isArray(input.sites)) return input;
-      if (input && Array.isArray(input.groups)) {
-        return {
-          provider: "All",
-          siteId: "all",
-          scrapedAt: input.scrapedAt,
-          sites: [{
-            provider: input.provider,
-            siteId: input.siteId,
-            framework: input.framework,
-            sourceUrl: input.sourceUrl,
-            scrapedAt: input.scrapedAt,
-            groups: input.groups
-          }],
-          groups: input.groups.map(group => ({
-            ...group,
-            provider: input.provider,
-            siteId: input.siteId,
-            framework: input.framework,
-            sourceUrl: input.sourceUrl,
-            scrapedAt: input.scrapedAt
-          }))
-        };
-      }
-      return { sites: [], groups: [], scrapedAt: new Date().toISOString() };
-    }
-
-    async function getRefreshSiteIds() {
-      const currentSites = sortSitesByOrder(normalizePayload(data).sites || []);
-      if (currentSites.length) {
-        return [...new Set(currentSites.map(site => site.siteId).filter(Boolean))];
-      }
+    async function pollLogin() {
       try {
-        const res = await fetch("/api/config", { cache: "no-store" });
+        const res = await fetch("/api/login/pending", { cache: "no-store" });
         const body = await res.json();
-        if (body.ok && Array.isArray(body.sites)) {
-          return [...new Set(sortSitesByOrder(body.sites).map(site => site.siteId).filter(Boolean))];
-        }
+        const pendings = Array.isArray(body.pendings)
+          ? body.pendings
+          : body.pending ? [{ siteId: body.siteId, siteName: body.siteName }] : [];
+        renderLoginPendings(pendings);
       } catch {}
-      return [];
     }
 
-    function mergeRefreshedPayload(siteId, payload) {
-      const refreshedPayload = normalizePayload(payload);
-      if (siteId === "all") {
-        data = refreshedPayload;
-        render();
-        return refreshedPayload;
+    function renderLoginPendings(pendings) {
+      const modalOpen = modal.overlay.classList.contains("open");
+      if (modalOpen) {
+        els.loginBar.classList.remove("show");
+        els.loginBar.innerHTML = "";
+        const first = pendings[0];
+        if (first) {
+          modal.loginConfirmText.textContent = "请在弹出的浏览器中完成「" + (first.siteName || first.siteId) + "」的登录验证，完成后点击下方按钮。";
+          modal.loginConfirm.dataset.site = first.siteId || "";
+          modal.loginConfirm.style.display = "block";
+        } else {
+          modal.loginConfirm.style.display = "none";
+        }
+        return;
       }
-
-      const updated = (refreshedPayload.sites || []).find(site => site.siteId === siteId);
-      if (!updated) {
-        data = refreshedPayload;
-        render();
-        return refreshedPayload;
+      modal.loginConfirm.style.display = "none";
+      if (!pendings.length) {
+        els.loginBar.classList.remove("show");
+        els.loginBar.innerHTML = "";
+        return;
       }
-
-      const current = normalizePayload(data);
-      const currentSites = current.sites || [];
-      const hasSite = currentSites.some(site => site.siteId === siteId);
-      const sites = hasSite
-        ? currentSites.map(site => site.siteId === siteId ? updated : site)
-        : [...currentSites, updated];
-
-      data = {
-        ...current,
-        scrapedAt: refreshedPayload.scrapedAt || current.scrapedAt,
-        sites,
-        groups: aggregateGroupsFromSites(sites)
-      };
-      render();
-      return refreshedPayload;
+      els.loginBar.innerHTML = pendings.map(p =>
+        '<div class="login-chip" data-site="' + escapeHtml(p.siteId || "") + '">' +
+        '<div class="login-chip-text">请在弹出的浏览器中完成「' + escapeHtml(p.siteName || p.siteId) + "」的登录验证，完成后点击右侧按钮。</div>" +
+        '<button class="primary" data-confirm-login="' + escapeHtml(p.siteId || "") + '">我已完成登录</button>' +
+        "</div>"
+      ).join("");
+      els.loginBar.classList.add("show");
     }
 
-    function aggregateGroupsFromSites(sites) {
-      return sites.flatMap(site => (site.groups || []).map(group => ({
-        ...group,
-        provider: site.provider,
-        siteId: site.siteId,
-        framework: site.framework,
-        sourceUrl: site.sourceUrl,
-        scrapedAt: site.scrapedAt
-      })));
+    async function confirmLogin(siteId, button) {
+      if (button) button.disabled = true;
+      try {
+        await fetch("/api/login/confirm" + (siteId ? "?site=" + encodeURIComponent(siteId) : ""), { method: "POST" });
+      } catch {}
+      if (button) button.disabled = false;
+      pollLogin();
     }
 
-    function isRefreshBusy() {
-      return !!activeRefreshSiteId || !!refreshAllState;
-    }
-
-    function setBusy(isBusy, siteId = null) {
-      activeRefreshSiteId = isBusy ? siteId : null;
-      applyRefreshUi();
-      render();
-    }
-
-    function applyRefreshUi() {
-      const isBusy = isRefreshBusy();
-      els.refreshAll.disabled = isBusy;
-      els.refreshAll.textContent = refreshAllState
-        ? "刷新中 " + (refreshAllState.current || refreshAllState.done) + "/" + refreshAllState.total
-        : (isBusy ? "刷新中" : "刷新全部");
-      els.refreshAll.classList.toggle("is-loading", isBusy);
-      els.refreshAll.setAttribute("aria-busy", isBusy ? "true" : "false");
-      els.content.classList.toggle("refreshing", isBusy);
-      els.content.classList.toggle("site-refreshing", isBusy && activeRefreshSiteId !== "all");
-    }
-
-    function setStatus(message, kind = "") {
-      els.status.textContent = message || "";
-      const statusKind = kind === true ? "error" : kind;
-      els.status.className = ["status", statusKind].filter(Boolean).join(" ");
-    }
-
-    function getSiteLabel(siteId, payload = data) {
-      const site = (normalizePayload(payload).sites || []).find(s => s.siteId === siteId);
-      return site?.provider || site?.name || siteId;
-    }
-
-    function buildRefreshDoneMessage(siteId, payload, elapsedMs) {
-      const normalized = normalizePayload(payload);
-      const elapsed = Math.max(1, Math.round(elapsedMs / 1000));
-      if (siteId === "all") {
-        return "刷新完成：平台 " + (normalized.sites || []).length + " 个，分组 " + (normalized.groups || []).length + " 个，用时 " + elapsed + " 秒";
-      }
-      const site = (normalized.sites || []).find(s => s.siteId === siteId);
-      const label = getSiteLabel(siteId, normalized);
-      return "刷新完成：" + label + "，分组 " + ((site?.groups || []).length) + " 个，用时 " + elapsed + " 秒";
-    }
-
-    function formatDate(value) {
-      if (!value) return "-";
-      const time = new Date(value);
-      if (Number.isNaN(time.getTime())) return "-";
-      return time.toLocaleString();
-    }
-
-    function formatBalance(balance) {
-      if (!balance) return "";
-      let amount = null;
-      if (balance.currency === "USD") {
-        amount = balance.balance;
-      } else if (balance.currency === "quota") {
-        amount = balance.quota != null ? balance.quota / 500000 : null;
-      }
-      if (amount == null) return "";
-      const cls = amount <= 0 ? "none" : amount < 1 ? "low" : "";
-      return '<span class="balance ' + cls + '">余额 $' + amount.toFixed(2) + '</span>';
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      })[char]);
-    }
-
-    els.refreshAll.addEventListener("click", () => refresh("all"));
-    els.autoRefresh.addEventListener("change", () => {
-      if (autoTimer) clearInterval(autoTimer);
-      const interval = Number(els.autoRefresh.value);
-      if (interval > 0) autoTimer = setInterval(() => refresh("all"), interval);
-    });
-    els.search.addEventListener("input", render);
-    els.sort.addEventListener("change", render);
-
-    els.content.addEventListener("click", (event) => {
-      const siteId = event.target.getAttribute("data-refresh");
-      if (siteId) refresh(siteId);
+    els.loginBar.addEventListener("click", (event) => {
+      const siteId = event.target.getAttribute("data-confirm-login");
+      if (siteId != null) confirmLogin(siteId || null, event.target);
     });
 
+    // ── 站点管理 Modal ───────────────────────
     const modal = {
       overlay: document.getElementById("manageModal"),
       close: document.getElementById("modalClose"),
@@ -1303,6 +1137,8 @@
       manageBtn: document.getElementById("manageSites")
     };
 
+    modal.loginConfirmBtn.addEventListener("click", () => confirmLogin(modal.loginConfirm.dataset.site || null, modal.loginConfirmBtn));
+
     function showFormError(message) {
       modal.formError.textContent = message;
       modal.formError.classList.add("show");
@@ -1316,15 +1152,16 @@
       modal.overlay.classList.add("open");
       loadSiteList();
       resetForm();
+      pollLogin();
     }
     function closeModal() {
       modal.overlay.classList.remove("open");
-      if (loginPollTarget === "modal") stopLoginPoll();
-      else modal.loginConfirm.style.display = "none";
+      modal.loginConfirm.style.display = "none";
       modal.save.disabled = false;
       modal.save.textContent = "保存并验证";
       clearFormError();
       resetForm();
+      pollLogin();
     }
     function resetForm() {
       modal.fSiteId.value = "";
@@ -1352,30 +1189,6 @@
       modal.tokenHint.textContent = site.token === "已配置" ? "已配置，留空则不修改" : "";
     }
 
-    function getHiddenSites() {
-      try { return new Set(JSON.parse(localStorage.getItem("hiddenSites") || "[]")); } catch { return new Set(); }
-    }
-    function setHiddenSites(set) {
-      localStorage.setItem("hiddenSites", JSON.stringify([...set]));
-    }
-    function getChannelOrder() {
-      try { return JSON.parse(localStorage.getItem("channelOrder") || "[]"); } catch { return []; }
-    }
-    function setChannelOrder(order) {
-      localStorage.setItem("channelOrder", JSON.stringify(order));
-    }
-    function sortSitesByOrder(sites) {
-      const order = getChannelOrder();
-      if (!order.length) return sites;
-      const indexById = new Map(order.map((id, i) => [id, i]));
-      return sites.slice().sort((a, b) => {
-        const ia = indexById.has(a.siteId) ? indexById.get(a.siteId) : order.length;
-        const ib = indexById.has(b.siteId) ? indexById.get(b.siteId) : order.length;
-        if (ia !== ib) return ia - ib;
-        return String(a.name || a.siteId).localeCompare(String(b.name || b.siteId), "zh-CN");
-      });
-    }
-
     async function loadSiteList() {
       try {
         const res = await fetch("/api/config", { cache: "no-store" });
@@ -1383,7 +1196,7 @@
         if (!body.ok) throw new Error(body.error || "加载失败");
         renderSiteList(body.sites || []);
       } catch (error) {
-        modal.siteList.innerHTML = '<div class="site-row-meta">加载失败：' + escapeHtml(error.message) + '</div>';
+        modal.siteList.innerHTML = '<div class="site-row-meta">加载失败:' + escapeHtml(error.message) + "</div>";
       }
     }
 
@@ -1395,12 +1208,12 @@
       modal.siteList.innerHTML = sites.map(site => {
         const cred = [site.username, site.password, site.token].filter(v => v && v !== "已配置" && v !== "").length > 0 || site.password === "已配置" || site.token === "已配置";
         return '<div class="site-row"><div class="site-row-info">' +
-          '<div class="site-row-name">' + escapeHtml(site.name || site.siteId) + '</div>' +
-          '<div class="site-row-meta">' + escapeHtml(site.baseUrl || "") + ' · ' + escapeHtml(site.framework || "-") + (cred ? ' · 凭证已配置' : ' · 未配置凭证') + '</div>' +
+          '<div class="site-row-name">' + escapeHtml(site.name || site.siteId) + "</div>" +
+          '<div class="site-row-meta">' + escapeHtml(site.baseUrl || "") + " · " + escapeHtml(site.framework || "-") + (cred ? " · 凭证已配置" : " · 未配置凭证") + "</div>" +
           '</div><div class="site-row-actions">' +
           '<button data-edit="' + escapeHtml(site.siteId) + '">编辑</button>' +
           '<button class="btn-danger" data-delete="' + escapeHtml(site.siteId) + '">删除</button>' +
-          '</div></div>';
+          "</div></div>";
       }).join("");
     }
 
@@ -1423,70 +1236,12 @@
           if (!body.ok) throw new Error(body.error || "删除失败");
           await loadSiteList();
           await loadData();
+          toast("已删除 " + deleteId, "success");
         } catch (error) {
-          alert(error.message);
+          toast(error.message, "error");
         }
       }
     });
-
-    let loginPollTimer = null;
-    let loginPollTarget = null;
-    const pageLoginConfirm = document.getElementById("pageLoginConfirm");
-    const pageLoginConfirmText = document.getElementById("pageLoginConfirmText");
-    const pageLoginConfirmBtn = document.getElementById("pageLoginConfirmBtn");
-
-    function showLoginConfirm(siteName, target = loginPollTarget || "modal") {
-      const text = `请在弹出的浏览器中完成「${siteName}」的登录验证，完成后点击下方按钮。`;
-      if (target === "page") {
-        pageLoginConfirmText.textContent = text;
-        pageLoginConfirm.classList.add("show");
-        modal.loginConfirm.style.display = "none";
-      } else {
-        modal.loginConfirmText.textContent = text;
-        modal.loginConfirm.style.display = "block";
-        pageLoginConfirm.classList.remove("show");
-      }
-    }
-    function hideLoginConfirm() {
-      modal.loginConfirm.style.display = "none";
-      pageLoginConfirm.classList.remove("show");
-    }
-    function stopLoginPoll() {
-      if (loginPollTimer) {
-        clearInterval(loginPollTimer);
-        loginPollTimer = null;
-      }
-      loginPollTarget = null;
-      hideLoginConfirm();
-    }
-
-    function startLoginPoll(target = "modal") {
-      stopLoginPoll();
-      loginPollTarget = target;
-      loginPollTimer = setInterval(async () => {
-        try {
-          const res = await fetch("/api/login/pending", { cache: "no-store" });
-          const body = await res.json();
-          if (body.pending) {
-            showLoginConfirm(body.siteName || body.siteId, target);
-          } else {
-            hideLoginConfirm();
-          }
-        } catch {}
-      }, 1000);
-    }
-
-    async function confirmLogin(button) {
-      if (button) button.disabled = true;
-      try {
-        await fetch("/api/login/confirm", { method: "POST" });
-      } catch {}
-      if (button) button.disabled = false;
-      hideLoginConfirm();
-    }
-
-    modal.loginConfirmBtn.addEventListener("click", () => confirmLogin(modal.loginConfirmBtn));
-    pageLoginConfirmBtn.addEventListener("click", () => confirmLogin(pageLoginConfirmBtn));
 
     modal.save.addEventListener("click", async () => {
       clearFormError();
@@ -1502,7 +1257,8 @@
       modal.save.disabled = true;
       const originalText = modal.save.textContent;
       modal.save.textContent = "验证采集中...";
-      startLoginPoll();
+      formBusy = true;
+      syncLoginPoll();
       try {
         const testRes = await fetch("/api/config/site/test", {
           method: "POST",
@@ -1510,9 +1266,7 @@
           body: JSON.stringify(payload)
         });
         const testBody = await testRes.json();
-        if (!testBody.ok) {
-          throw new Error(testBody.error || "采集验证失败");
-        }
+        if (!testBody.ok) throw new Error(testBody.error || "采集验证失败");
 
         modal.save.textContent = "保存中...";
         const res = await fetch("/api/config/site", {
@@ -1527,16 +1281,13 @@
         await loadSiteList();
         closeModal();
         const savedSiteId = body.siteId;
-        if (savedSiteId) {
-          try {
-            await fetch("/api/refresh?site=" + encodeURIComponent(savedSiteId), { method: "POST" });
-          } catch (e) { /* 忽略采集错误，用户可手动刷新 */ }
-        }
-        await loadData();
+        if (savedSiteId) refresh(savedSiteId);
+        else await loadData();
       } catch (error) {
         showFormError(error.message || String(error));
       } finally {
-        stopLoginPoll();
+        formBusy = false;
+        syncLoginPoll();
         modal.save.disabled = false;
         modal.save.textContent = originalText;
       }
@@ -1547,6 +1298,24 @@
     modal.cancel.addEventListener("click", closeModal);
     modal.overlay.addEventListener("click", (event) => {
       if (event.target === modal.overlay) closeModal();
+    });
+
+    // ── 事件绑定 ─────────────────────────────
+    els.refreshAll.addEventListener("click", () => refresh("all"));
+    els.autoRefresh.addEventListener("change", () => {
+      if (autoTimer) clearInterval(autoTimer);
+      const interval = Number(els.autoRefresh.value);
+      if (interval > 0) autoTimer = setInterval(() => refresh("all"), interval);
+    });
+    els.search.addEventListener("input", render);
+    els.sort.addEventListener("change", render);
+
+    els.content.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-refresh]");
+      const siteId = btn?.getAttribute("data-refresh");
+      if (!siteId) return;
+      if (refreshingSites.has(siteId)) return; // 点击的是“刷新中”按钮（已 disabled，兜底）
+      refresh(siteId);
     });
 
     loadData();

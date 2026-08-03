@@ -445,6 +445,7 @@ async function promptForBrowserLogin(siteId, siteName, baseUrl, siteConfig, opti
     console.log(`${siteName} 已完成浏览器确认，但未读到可用登录态，不再重复等待。`);
     return null;
   }
+  const previousLoginToken = chromeResult.loginToken;
 
   console.log(`将打开 ${siteName} 浏览器窗口，请手动登录并通过验证。`);
   if (waitForConfirm) {
@@ -465,7 +466,7 @@ async function promptForBrowserLogin(siteId, siteName, baseUrl, siteConfig, opti
       await prefillLoginForm(page, siteConfig).catch(() => null);
     }
 
-    await waitForLoginStep(siteId, siteName, waitForConfirm);
+    await waitForLoginStep(siteId, siteName, waitForConfirm, previousLoginToken);
     return await extractSessionFromContext(context, page, baseUrl, siteConfig, siteName);
   } finally {
     await context.close();
@@ -516,13 +517,18 @@ async function promptForSystemChromeLogin(siteId, siteName, baseUrl, siteConfig,
   );
   chrome.unref();
 
+let loginToken = `chrome:${siteId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
   try {
-    await waitForLoginStep(siteId, siteName, waitForConfirm);
+    if (waitForConfirm) {
+      await waitForConfirm(siteId, siteName, null);
+    } else {
+      await waitForEnter(`完成 ${siteName} 登录后按回车继续...`);
+    }
 
     const cdpReady = await waitForCdp(port);
     if (!cdpReady) {
       console.log(`无法连接系统 Chrome 调试端口 ${port}，请确认浏览器仍在运行。`);
-      return { attempted: true, session: null };
+      return { attempted: true, session: null, loginToken };
     }
 
     const chromium = await getChromium(siteName);
@@ -533,17 +539,17 @@ async function promptForSystemChromeLogin(siteId, siteName, baseUrl, siteConfig,
       if (!session) {
         console.log(`${siteName} 浏览器已确认，但未读到 cookie/userId。请确认已登录成功后再点确认。`);
       }
-      return { attempted: true, session };
+      return { attempted: true, session, loginToken };
     } catch (error) {
       console.log(`无法从系统 Chrome 读取登录态: ${error.message.split("\n")[0]}`);
-      return { attempted: true, session: null };
+      return { attempted: true, session: null, loginToken };
     } finally {
       // 只断开 CDP 连接；不要 kill 用户刚登录的 Chrome 窗口
       await browser?.close().catch(() => null);
     }
   } catch (error) {
     console.log(`${siteName} 系统 Chrome 登录流程异常: ${error.message.split("\n")[0]}`);
-    return { attempted: true, session: null };
+    return { attempted: true, session: null, loginToken };
   }
 }
 
@@ -559,9 +565,9 @@ async function waitForEnter(prompt) {
   }
 }
 
-async function waitForLoginStep(siteId, siteName, waitForConfirm) {
+async function waitForLoginStep(siteId, siteName, waitForConfirm, previousToken) {
   if (waitForConfirm) {
-    await waitForConfirm(siteId, siteName);
+    await waitForConfirm(siteId, siteName, previousToken);
   } else {
     await waitForEnter(`完成 ${siteName} 登录后按回车继续...`);
   }
